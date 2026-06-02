@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LogisTel - Portal Mahasiswa</title>
+    <!-- Tailwind CSS v3 via Play CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        telkom: {
+                            50: '#fef2f2',
+                            100: '#fee2e2',
+                            500: '#ef4444',
+                            600: '#dc2626',
+                            700: '#b91c1c',
+                            800: '#991b1b',
+                            900: '#7f1d1d',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Font: Outfit -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+    </style>
+    <!-- Client-Side Session Guard & Data Sync -->
+    <script>
+        // Check session before rendering page to prevent flicker
+        const sessionStr = localStorage.getItem("logistel_session");
+        if (!sessionStr) {
+            window.location.href = 'login.html';
+        }
+        const sessionUser = JSON.parse(sessionStr);
+        if (sessionUser.Role !== 'User') {
+            window.location.href = 'login.html';
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col md:flex-row relative">
+
+    <!-- Sidebar Navigation (Telkom Crimson Theme) -->
+    <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-telkom-800 text-white flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg">
+        <div class="flex flex-col h-full">
+            <!-- Sidebar Header -->
+            <div class="h-16 px-6 border-b border-telkom-900 flex items-center gap-3 shrink-0">
+                <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-telkom-800 font-bold text-lg shadow-sm">
+                    L
+                </div>
+                <span class="text-xl font-bold tracking-tight text-white">Logis<span class="text-red-200">Tel</span></span>
+                <span class="bg-telkom-900/60 text-red-200 border border-telkom-700/50 text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">User</span>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="flex-1 px-4 py-6 space-y-1.5">
+                <button onclick="switchTab('katalog-tab', 'katalog-section')" id="katalog-tab" 
+                    class="nav-link w-full flex items-center gap-3 px-4 py-3 text-red-100 rounded-xl hover:bg-telkom-700 hover:text-white transition duration-150 group active-tab bg-telkom-700 text-white font-medium">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2H6a2 2 0 01-2-2v-4zM14 16a2 2 0 012-2h2a2 2 0 012 2v4a2 2 0 01-2 2h-2a2 2 0 01-2-2v-4z"></path>
+                    </svg>
+                    <span>Katalog Inventaris</span>
+                </button>
+
+                <button onclick="switchTab('form-tab', 'form-section')" id="form-tab" 
+                    class="nav-link w-full flex items-center gap-3 px-4 py-3 text-red-200 rounded-xl hover:bg-telkom-700 hover:text-white transition duration-150 group">
+                    <svg class="w-5 h-5 text-red-200 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                    <span>Form Pengajuan</span>
+                </button>
+
+                <button onclick="switchTab('riwayat-tab', 'riwayat-section')" id="riwayat-tab" 
+                    class="nav-link w-full flex items-center gap-3 px-4 py-3 text-red-200 rounded-xl hover:bg-telkom-700 hover:text-white transition duration-150 group">
+                    <svg class="w-5 h-5 text-red-200 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <span>Riwayat Peminjaman</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer/Logout -->
+        <div class="p-4 border-t border-telkom-900 shrink-0">
+            <button onclick="logout()" class="flex items-center justify-center gap-2 w-full py-2.5 bg-telkom-900/40 hover:bg-telkom-900/80 text-red-200 hover:text-white font-bold rounded-xl text-sm transition duration-150">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                </svg>
+                <span>Keluar (Logout)</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content Panel (WITHOUT overflow-hidden to allow scrolling) -->
+    <main class="flex-1 min-h-screen md:pl-64 flex flex-col w-full">
+        <!-- Top Header -->
+        <header class="h-16 px-6 border-b border-gray-200 bg-white flex items-center justify-between sticky top-0 z-20 shadow-sm">
+            <div class="flex items-center gap-4">
+                <!-- Mobile Sidebar Toggle -->
+                <button onclick="toggleMobileSidebar()" class="md:hidden text-gray-500 hover:text-gray-900 focus:outline-none transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+                <h2 id="section-title" class="text-lg font-bold text-gray-900 tracking-tight">Katalog Inventaris</h2>
+            </div>
+            
+            <div class="flex items-center gap-4">
+                <span class="bg-red-50 border border-red-200 text-telkom-700 text-xs px-2.5 py-1 rounded-md font-semibold font-mono uppercase tracking-wider">SSO CONNECTED</span>
+            </div>
+        </header>
+
+        <!-- Main Body (No scroll traps, allowed to expand and scroll naturally on body/viewport) -->
+        <div class="p-6 space-y-6 flex-1 bg-gray-50">
+
+            <!-- ================= SECTION: TOP PROFILE HEADER ================= -->
+            <div class="bg-white border border-gray-200 rounded-2xl p-6 relative overflow-hidden shadow-sm">
+                <!-- Decorative brand strip -->
+                <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-telkom-700"></div>
+                
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pl-2">
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-xl bg-telkom-50 border border-telkom-100 text-telkom-700 flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                            AM
+                        </div>
+                        <div>
+                            <h3 class="text-base font-bold text-gray-900 flex flex-wrap items-center gap-2">
+                                <span id="display-nama">Alya Maghfira</span>
+                                <span class="bg-red-100 text-telkom-700 border border-red-200/50 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Mahasiswa</span>
+                            </h3>
+                            <p id="display-prodi" class="text-xs text-gray-500 mt-0.5">Program Studi S1 Teknik Informatika - Universitas Telkom</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Pre-filled profile details -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 lg:gap-6 border-t lg:border-t-0 lg:border-l border-gray-200 pt-4 lg:pt-0 lg:pl-6 flex-1">
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">NIM</p>
+                            <p id="display-nim" class="text-sm font-semibold text-gray-800 font-mono mt-0.5">103112400240</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Ormawa</p>
+                            <p id="display-ormawa" class="text-sm font-semibold text-gray-800 mt-0.5">HMIF</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Nomor HP</p>
+                            <p id="display-hp" class="text-sm font-semibold text-gray-800 mt-0.5">081234567890</p>
+                        </div>
+                        <div>
+                            <p class="text-[10px] text-gray-400 uppercase tracking-wider font-bold">Email SSO</p>
+                            <p id="display-email" class="text-sm font-semibold text-gray-800 truncate mt-0.5" title="alyamaghfira@student.telkomuniversity.ac.id">alyamaghfira@student.telkomuniversity.ac.id</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ================= TAB CONTENT: KATALOG INVENTARIS ================= -->
+            <section id="katalog-section" class="tab-content space-y-6">
+                <!-- Filters and Search -->
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                    <div class="flex bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
+                        <button onclick="filterCatalog('Semua')" id="filter-all" class="catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg bg-telkom-700 text-white transition">Semua</button>
+                        <button onclick="filterCatalog('Barang')" id="filter-barang" class="catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-900 transition">Barang</button>
+                        <button onclick="filterCatalog('Ruangan')" id="filter-ruangan" class="catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-900 transition">Ruangan</button>
+                    </div>
+                    
+                    <div class="relative w-full sm:w-64">
+                        <input type="text" id="catalog-search" oninput="searchCatalog()" placeholder="Cari nama barang/ruangan..." 
+                            class="w-full pl-9 pr-4 py-2 bg-white border border-gray-200 rounded-xl text-xs text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 transition shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Grid of items -->
+                <div id="catalog-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- Item 1: Camera -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Barang" data-name="kamera dslr">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-red-50 border border-red-100 text-telkom-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Barang</span>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Stok: 10 Unit</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">KAMERA DSLR</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Peralatan dokumentasi resolusi tinggi untuk event atau publikasi ormawa.</p>
+                        </div>
+                        <button onclick="quickBorrow('Barang', 'KAMERA')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 text-gray-700 hover:text-white font-semibold rounded-xl text-xs border border-gray-200 hover:border-telkom-600 transition-all duration-150">
+                            Pinjam Sekarang
+                        </button>
+                    </div>
+
+                    <!-- Item 2: Wireless Mic -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Barang" data-name="mic wireless">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-red-50 border border-red-100 text-telkom-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Barang</span>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Stok: 8 Unit</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">MIC WIRELESS</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Paket mikrofon nirkabel beserta receiver suara untuk panggung/seminar.</p>
+                        </div>
+                        <button onclick="quickBorrow('Barang', 'MIC WIRELESS')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 text-gray-700 hover:text-white font-semibold rounded-xl text-xs border border-gray-200 hover:border-telkom-600 transition-all duration-150">
+                            Pinjam Sekarang
+                        </button>
+                    </div>
+
+                    <!-- Item 3: Ruangan DSP 301 -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Ruangan" data-name="ruangan dsp 301">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Ruangan</span>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Tersedia</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">RUANGAN DSP 301</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Ruang kelas dengan fasilitas proyektor, AC, kapasitas maksimum 40 orang.</p>
+                        </div>
+                        <button onclick="quickBorrow('Ruangan', 'DSP 301')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 text-gray-700 hover:text-white font-semibold rounded-xl text-xs border border-gray-200 hover:border-telkom-600 transition-all duration-150">
+                            Pinjam Sekarang
+                        </button>
+                    </div>
+
+                    <!-- Item 4: Aula Rachmat Effendy -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Ruangan" data-name="aula rachmat effendy">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Ruangan</span>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Tersedia</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">AULA RACHMAT EFFENDY</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Gedung pertemuan serbaguna kapasitas besar. Cocok untuk seminar akbar/wisuda.</p>
+                        </div>
+                        <button onclick="quickBorrow('Ruangan', 'AULA RACHMAT EFFENDY')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 text-gray-700 hover:text-white font-semibold rounded-xl text-xs border border-gray-200 hover:border-telkom-600 transition-all duration-150">
+                            Pinjam Sekarang
+                        </button>
+                    </div>
+
+                    <!-- Item 5: Meja Lipat -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Barang" data-name="meja lipat">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-red-50 border border-red-100 text-telkom-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Barang</span>
+                                <span class="bg-red-50 text-red-700 border border-red-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Stok Kosong</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">MEJA LIPAT</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Meja portable berbahan ringan untuk stand registrasi, rapat, atau bazar ormawa.</p>
+                        </div>
+                        <button disabled class="w-full py-2 bg-gray-50 text-gray-400 font-semibold rounded-xl text-xs border border-gray-100 cursor-not-allowed">
+                            Stok Kosong
+                        </button>
+                    </div>
+
+                    <!-- Item 6: GOR DI PANDJAITAN -->
+                    <div class="catalog-card bg-white border border-gray-200 hover:border-telkom-500/50 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 group shadow-sm hover:shadow-md" data-type="Ruangan" data-name="gor di pandjaitan">
+                        <div>
+                            <div class="flex justify-between items-start mb-3">
+                                <span class="bg-emerald-50 border border-emerald-100 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Ruangan</span>
+                                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-[10px] font-bold px-2.5 py-0.5 rounded-full">Tersedia</span>
+                            </div>
+                            <h4 class="text-base font-bold text-gray-900 group-hover:text-telkom-700 transition mb-1">GOR DI PANDJAITAN</h4>
+                            <p class="text-xs text-gray-500 leading-relaxed mb-4">Gedung Olahraga indoor serbaguna untuk latihan bulu tangkis, basket, dan acara musik.</p>
+                        </div>
+                        <button onclick="quickBorrow('Ruangan', 'GOR DI PANDJAITAN')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 text-gray-700 hover:text-white font-semibold rounded-xl text-xs border border-gray-200 hover:border-telkom-600 transition-all duration-150">
+                            Pinjam Sekarang
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= TAB CONTENT: FORM PENGAJUAN (NO SCROLL CLIPPING) ================= -->
+            <section id="form-section" class="tab-content hidden">
+                <div class="max-w-2xl bg-white border border-gray-200 rounded-2xl p-8 shadow-sm">
+                    <h3 class="text-base font-bold text-gray-900 mb-6 uppercase tracking-wider border-b border-gray-100 pb-2">Formulir Pengajuan Peminjaman</h3>
+                    
+                    <form id="peminjaman-form" action="pengajuan-peminjaman" method="POST" class="space-y-6">
+                        <!-- Read-only user identities -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label for="nim" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">NIM Pemohon (Read-Only)</label>
+                                <input type="text" name="nim" id="nim" readonly 
+                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 font-mono text-sm focus:outline-none cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label for="nama_ormawa" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Ormawa (Read-Only)</label>
+                                <input type="text" name="nama_ormawa" id="nama_ormawa" readonly 
+                                    class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-500 text-sm focus:outline-none cursor-not-allowed">
+                            </div>
+                        </div>
+
+                        <!-- Dropdowns to Choose Inventory -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label for="tipe_inventaris" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jenis Inventaris</label>
+                                <select name="tipe_inventaris" id="tipe_inventaris" required onchange="handleFormTypeChange()"
+                                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 appearance-none cursor-pointer">
+                                    <option value="Barang">Barang (Logistik)</option>
+                                    <option value="Ruangan">Ruangan (Fasilitas)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="id_item" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pilih Item</label>
+                                <select name="id_item" id="id_item" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-850 text-sm focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 cursor-pointer">
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Quantity Input enabled only for physical Barang -->
+                        <div id="jumlah-container">
+                            <label for="jumlah" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jumlah Barang</label>
+                            <input type="number" name="jumlah" id="jumlah" min="1" max="10" value="1" required
+                                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                        </div>
+
+                        <!-- Event details -->
+                        <div>
+                            <label for="nama_kegiatan" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Kegiatan</label>
+                            <input type="text" name="nama_kegiatan" id="nama_kegiatan" required placeholder="Contoh: Rapat Kerja Internal HMIF Divisi Humas"
+                                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                        </div>
+
+                        <!-- Date parameters -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <div>
+                                <label for="tanggal_mulai" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Mulai Pinjam</label>
+                                <input type="date" name="tanggal_mulai" id="tanggal_mulai" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                            </div>
+                            <div>
+                                <label for="tanggal_selesai" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Tanggal Selesai Pinjam</label>
+                                <input type="date" name="tanggal_selesai" id="tanggal_selesai" required
+                                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                            </div>
+                        </div>
+
+                        <!-- Description/Purpose -->
+                        <div>
+                            <label for="deskripsi" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Deskripsi Rencana Kegiatan</label>
+                            <textarea name="deskripsi" id="deskripsi" rows="4" required placeholder="Jelaskan secara mendetail tujuan peminjaman dan agenda kegiatan..."
+                                class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition"></textarea>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" id="submit-peminjaman"
+                            class="w-full py-3.5 px-4 bg-telkom-700 hover:bg-telkom-800 text-white font-bold rounded-xl shadow-sm transition-all duration-150">
+                            Kirim Berkas Pengajuan
+                        </button>
+                    </form>
+                </div>
+            </section>
+
+            <!-- ================= TAB CONTENT: RIWAYAT PEMINJAMAN ================= -->
+            <section id="riwayat-section" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Riwayat Peminjaman</h3>
+                    <p class="text-xs text-gray-500">Daftar transaksi dan berkas yang diajukan oleh akun login Anda</p>
+                </div>
+
+                <!-- History Table -->
+                <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                                    <th class="px-6 py-4">ID Transaksi</th>
+                                    <th class="px-6 py-4">Nama Kegiatan</th>
+                                    <th class="px-6 py-4">Detail Inventaris</th>
+                                    <th class="px-6 py-4">Tanggal Peminjaman</th>
+                                    <th class="px-6 py-4">Status Pengajuan</th>
+                                    <th class="px-6 py-4 text-center">Barcode</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
+                                <!-- Pending Row -->
+                                <tr>
+                                    <td class="px-6 py-4 font-mono text-telkom-700">#PMJ-902</td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900">Rapat Kerja Harian Internal</td>
+                                    <td class="px-6 py-4 text-gray-600">DSP 301 (Ruangan)</td>
+                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">2026-06-03 s/d 2026-06-04</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                                            PENDING
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center text-gray-400 font-mono text-xs">-</td>
+                                </tr>
+
+                                <!-- Approved Row -->
+                                <tr>
+                                    <td class="px-6 py-4 font-mono text-telkom-700">#PMJ-881</td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900">Latihan Koordinasi Sound System</td>
+                                    <td class="px-6 py-4 text-gray-600">MIC WIRELESS (2 Unit)</td>
+                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">2026-05-28 s/d 2026-05-28</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-emerald-700 font-semibold bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            APPROVED
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button onclick="openBarcodeModal('PMJ-881', 'MIC WIRELESS', 'HMTF-881-BAR')" class="px-2.5 py-1 bg-red-50 border border-red-200 hover:bg-red-100 text-telkom-700 text-xs font-semibold rounded-md transition font-mono">
+                                            Lihat Barcode
+                                        </button>
+                                    </td>
+                                </tr>
+
+                                <!-- Rejected Row -->
+                                <tr>
+                                    <td class="px-6 py-4 font-mono text-telkom-700">#PMJ-874</td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900">Pameran Bazar Kewirausahaan</td>
+                                    <td class="px-6 py-4 text-gray-600">MEJA LIPAT (12 Unit)</td>
+                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">2026-05-20 s/d 2026-05-22</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full" title="Ditolak karena stok meja lipat tidak mencukupi untuk jumlah yang diminta.">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+                                            REJECTED
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center text-gray-400 font-mono text-xs">-</td>
+                                </tr>
+
+                                <!-- Returned Row -->
+                                <tr>
+                                    <td class="px-6 py-4 font-mono text-telkom-700">#PMJ-820</td>
+                                    <td class="px-6 py-4 font-semibold text-gray-900">Workshop Videografi Digital</td>
+                                    <td class="px-6 py-4 text-gray-600">KAMERA DSLR (1 Unit)</td>
+                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">2026-05-01 s/d 2026-05-02</td>
+                                    <td class="px-6 py-4">
+                                        <span class="inline-flex items-center gap-1.5 text-xs text-blue-700 font-semibold bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                                            RETURNED
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 text-center">
+                                        <button onclick="openBarcodeModal('PMJ-820', 'KAMERA DSLR (Returned)', 'HMTF-820-BAR-RET')" class="px-2.5 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 text-xs font-semibold rounded-md transition font-mono">
+                                            Arsip Barcode
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ================= BARCODE MODAL VIEW ================= -->
+    <div id="barcode-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white border border-gray-200 w-full max-w-sm rounded-2xl overflow-hidden shadow-xl transform scale-95 transition-transform duration-200">
+            <div class="px-6 py-4 border-b border-gray-150 flex justify-between items-center bg-gray-50">
+                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Barcode Peminjaman</h4>
+                <button onclick="closeBarcodeModal()" class="text-gray-400 hover:text-gray-600 transition focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <div class="p-6 flex flex-col items-center text-center space-y-4">
+                <p class="text-xs text-gray-500">Tunjukkan barcode ini kepada petugas logistik di gudang untuk melakukan serah terima inventaris.</p>
+                
+                <!-- Mock Barcode Drawing with SVG -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 w-full flex flex-col items-center shadow-sm">
+                    <svg class="w-full h-24" viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
+                        <rect width="100" height="30" fill="white"/>
+                        <rect x="5" y="2" width="2" height="20" fill="black"/>
+                        <rect x="9" y="2" width="1" height="20" fill="black"/>
+                        <rect x="12" y="2" width="3" height="20" fill="black"/>
+                        <rect x="17" y="2" width="1" height="20" fill="black"/>
+                        <rect x="19" y="2" width="2" height="20" fill="black"/>
+                        <rect x="23" y="2" width="4" height="20" fill="black"/>
+                        <rect x="29" y="2" width="1" height="20" fill="black"/>
+                        <rect x="32" y="2" width="2" height="20" fill="black"/>
+                        <rect x="36" y="2" width="1" height="20" fill="black"/>
+                        <rect x="39" y="2" width="3" height="20" fill="black"/>
+                        <rect x="44" y="2" width="2" height="20" fill="black"/>
+                        <rect x="48" y="2" width="1" height="20" fill="black"/>
+                        <rect x="51" y="2" width="4" height="20" fill="black"/>
+                        <rect x="57" y="2" width="2" height="20" fill="black"/>
+                        <rect x="61" y="2" width="1" height="20" fill="black"/>
+                        <rect x="64" y="2" width="3" height="20" fill="black"/>
+                        <rect x="69" y="2" width="2" height="20" fill="black"/>
+                        <rect x="73" y="2" width="1" height="20" fill="black"/>
+                        <rect x="76" y="2" width="4" height="20" fill="black"/>
+                        <rect x="82" y="2" width="2" height="20" fill="black"/>
+                        <rect x="86" y="2" width="1" height="20" fill="black"/>
+                        <rect x="89" y="2" width="3" height="20" fill="black"/>
+                        <rect x="94" y="2" width="2" height="20" fill="black"/>
+                        <text x="50" y="27" font-family="monospace" font-size="4" text-anchor="middle" fill="black" id="barcode-display-val">HMTF-881-BAR</text>
+                    </svg>
+                </div>
+
+                <div class="w-full text-left space-y-1.5 text-xs bg-gray-50 border border-gray-150 p-3.5 rounded-xl">
+                    <p class="text-gray-500">ID Peminjaman: <span id="barcode-modal-id" class="text-gray-800 font-semibold font-mono"></span></p>
+                    <p class="text-gray-500">Nama Barang: <span id="barcode-modal-item" class="text-gray-800 font-semibold"></span></p>
+                </div>
+
+                <button onclick="closeBarcodeModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded-xl transition">
+                    Tutup Tampilan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Client-Side Javascript Interactivity -->
+    <script>
+        // Synchronize dynamic session parameters from localStorage on load
+        document.addEventListener("DOMContentLoaded", function() {
+            // Retrieve session data
+            const userSession = JSON.parse(localStorage.getItem("logistel_session"));
+            
+            // Map values to DOM Elements in Profile Card
+            document.getElementById("display-nama").innerText = userSession.Nama;
+            document.getElementById("display-nim").innerText = userSession.NIM;
+            document.getElementById("display-ormawa").innerText = userSession.Ormawa;
+            document.getElementById("display-hp").innerText = userSession.HP;
+            document.getElementById("display-email").innerText = userSession.Email;
+
+            // Map values to Read-Only Form Inputs
+            document.getElementById("nim").value = userSession.NIM;
+            document.getElementById("nama_ormawa").value = userSession.Ormawa;
+
+            // Set Avatar Initials
+            const initials = userSession.Nama.split(" ").map(n => n[0]).join("").toUpperCase().substring(0, 2);
+            document.querySelector(".w-12.h-12.rounded-xl").innerText = initials;
+
+            // Conditional Program Studi Logic based on Ormawa
+            let prodiText = "Program Studi Universitas Telkom";
+            if (userSession.Ormawa === "HMIF") {
+                prodiText = "Program Studi S1 Teknik Informatika - Universitas Telkom";
+            } else if (userSession.Ormawa === "HMTF") {
+                prodiText = "Program Studi S1 Teknik Fisika - Universitas Telkom";
+            } else if (userSession.Ormawa === "HME") {
+                prodiText = "Program Studi S1 Teknik Elektro - Universitas Telkom";
+            }
+            document.getElementById("display-prodi").innerText = prodiText;
+
+            // Initialize default catalog dropdown
+            handleFormTypeChange();
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem("logistel_session");
+            window.location.href = 'login.html';
+        }
+
+        // Array of inventory options
+        const inventarisData = {
+            'Barang': [
+                { id: '1', name: 'KAMERA' },
+                { id: '2', name: 'STAND MIC' },
+                { id: '3', name: 'MIC WIRELESS' },
+                { id: '4', name: 'BENDERA' },
+                { id: '5', name: 'NAMPAN' },
+                { id: '6', name: 'MEJA' },
+                { id: '7', name: 'SOFA' }
+            ],
+            'Ruangan': [
+                { id: '101', name: 'DSP 301' },
+                { id: '102', name: 'DSP 302' },
+                { id: '103', name: 'DSP 303' },
+                { id: '123', name: 'AULA RACHMAT EFFENDY' },
+                { id: '130', name: 'TT 101' },
+                { id: '140', name: 'GOR DI PANDJAITAN' }
+            ]
+        };
+
+        // Initialize form dropdown
+        function populateDropdown(type, selectedItemValue = null) {
+            const dropdown = document.getElementById('id_item');
+            dropdown.innerHTML = '';
+            
+            const options = inventarisData[type];
+            options.forEach(opt => {
+                const element = document.createElement('option');
+                element.value = opt.id;
+                element.text = opt.name;
+                element.className = "bg-white text-gray-800";
+                if (selectedItemValue && opt.name.toUpperCase().includes(selectedItemValue.toUpperCase())) {
+                    element.selected = true;
+                }
+                dropdown.appendChild(element);
+            });
+        }
+
+        // On Type Dropdown Change
+        function handleFormTypeChange() {
+            const type = document.getElementById('tipe_inventaris').value;
+            const qtyContainer = document.getElementById('jumlah-container');
+            const qtyInput = document.getElementById('jumlah');
+
+            populateDropdown(type);
+
+            if (type === 'Ruangan') {
+                qtyContainer.classList.add('hidden');
+                qtyInput.value = '1';
+                qtyInput.required = false;
+            } else {
+                qtyContainer.classList.remove('hidden');
+                qtyInput.required = true;
+            }
+        }
+
+        // Quick Borrow trigger from cards
+        function quickBorrow(type, itemName) {
+            // Switch to form tab
+            switchTab('form-tab', 'form-section');
+            
+            // Set type values
+            document.getElementById('tipe_inventaris').value = type;
+            handleFormTypeChange();
+            
+            // Populate and select item
+            populateDropdown(type, itemName);
+        }
+
+        // Switch Active Sidebar tab
+        function switchTab(tabId, sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.tab-content').forEach(section => {
+                section.classList.add('hidden');
+            });
+            
+            // Show target section
+            document.getElementById(sectionId).classList.remove('hidden');
+
+            // Deactivate all nav links
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('bg-telkom-700', 'text-white', 'active-tab', 'font-medium');
+                link.classList.add('text-red-200');
+            });
+
+            // Activate target link
+            const targetLink = document.getElementById(tabId);
+            targetLink.classList.add('bg-telkom-700', 'text-white', 'active-tab', 'font-medium');
+            targetLink.classList.remove('text-red-200');
+
+            // Update title header
+            let title = "Katalog Inventaris";
+            if (sectionId === 'form-section') title = "Form Pengajuan Baru";
+            if (sectionId === 'riwayat-section') title = "Riwayat Transaksi Peminjaman";
+            document.getElementById('section-title').innerText = title;
+
+            // Close mobile sidebar if open
+            const sidebar = document.getElementById('sidebar');
+            sidebar.classList.add('-translate-x-full');
+        }
+
+        // Toggle Mobile Sidebar
+        function toggleMobileSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+            }
+        }
+
+        // Filter Catalog Cards (Semua / Barang / Ruangan)
+        // Light Mode styling helper for filter buttons
+        function filterCatalog(filterType) {
+            document.querySelectorAll('.catalog-filter-btn').forEach(btn => {
+                btn.className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-900 transition";
+            });
+            
+            if (filterType === 'Semua') {
+                document.getElementById('filter-all').className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg bg-telkom-700 text-white transition";
+            } else if (filterType === 'Barang') {
+                document.getElementById('filter-barang').className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg bg-telkom-700 text-white transition";
+            } else {
+                document.getElementById('filter-ruangan').className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg bg-telkom-700 text-white transition";
+            }
+
+            document.querySelectorAll('.catalog-card').forEach(card => {
+                const cardType = card.getAttribute('data-type');
+                if (filterType === 'Semua' || cardType === filterType) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // Search Catalog Cards by Text
+        function searchCatalog() {
+            const query = document.getElementById('catalog-search').value.toLowerCase().trim();
+            document.querySelectorAll('.catalog-card').forEach(card => {
+                const cardName = card.getAttribute('data-name');
+                if (cardName.includes(query)) {
+                    card.classList.remove('hidden');
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+        }
+
+        // --- Barcode Modal Logic ---
+        function openBarcodeModal(id, item, barcodeText) {
+            const modal = document.getElementById('barcode-modal');
+            document.getElementById('barcode-modal-id').innerText = "#" + id;
+            document.getElementById('barcode-modal-item').innerText = item;
+            document.getElementById('barcode-display-val').textContent = barcodeText;
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeBarcodeModal() {
+            const modal = document.getElementById('barcode-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+    </script>
+</body>
+</html>
