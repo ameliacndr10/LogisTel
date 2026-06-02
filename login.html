@@ -57,7 +57,7 @@
                     </div>
                 </div>
                 <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Logis<span class="text-telkom-700">Tel</span></h1>
-                <p class="text-xs text-gray-500 font-semibold tracking-wide uppercase mt-1">Portal Logistik & Inventaris Tel-U</p>
+                <p class="text-xs text-gray-500 font-semibold tracking-wide uppercase mt-1">Portal Peminjaman Ruangan & Barang Telkom University Purwokerto</p>
                 <div class="w-12 h-1 bg-telkom-700 rounded-full mt-3"></div>
             </div>
 
@@ -148,6 +148,33 @@
 
     <!-- Password visibility toggle script -->
     <script>
+        // Initialize default users database if not exists
+        if (!localStorage.getItem("logistel_users")) {
+            const defaultUsers = [
+                {
+                    Nama: "Fidela Marshallwa",
+                    Username: "adminfidelamarshallwa",
+                    Password: "salwa",
+                    Role: "Admin",
+                    Identitas: "198711032014022",
+                    Ormawa: "Logistik Kampus",
+                    Email: "admin@logistel.id",
+                    HP: "081122334455"
+                },
+                {
+                    Nama: "Alya Maghfira",
+                    Username: "alyamaghfira@student.telkomuniversity.ac.id",
+                    Password: "alya",
+                    Role: "User",
+                    Identitas: "103112400240",
+                    Ormawa: "HMIF",
+                    Email: "alyamaghfira@student.telkomuniversity.ac.id",
+                    HP: "081234567890"
+                }
+            ];
+            localStorage.setItem("logistel_users", JSON.stringify(defaultUsers));
+        }
+
         function togglePasswordVisibility() {
             const passwordInput = document.getElementById('password');
             const eyeIcon = document.getElementById('eye-icon');
@@ -179,29 +206,36 @@
             // Hide previous errors
             alertBox.classList.add('hidden');
 
-            if (usernameInput === "alyamaghfira@student.telkomuniversity.ac.id" && passwordInput === "alya" && roleInput === "User") {
-                // Mock Session User
+            // Retrieve user database from localStorage
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            
+            // Find matched user using .find()
+            const matchedUser = users.find(u => 
+                u.Username.toLowerCase() === usernameInput.toLowerCase() && 
+                u.Password === passwordInput && 
+                u.Role === roleInput
+            );
+
+            if (matchedUser) {
+                // Construct session data
                 const userSession = {
-                    Nama: "Alya Maghfira",
-                    NIM: "103112400240",
-                    Ormawa: "HMIF",
-                    HP: "081234567890",
-                    Email: "alyamaghfira@student.telkomuniversity.ac.id",
-                    Role: "User"
+                    Nama: matchedUser.Nama,
+                    NIM: matchedUser.Identitas,
+                    Ormawa: matchedUser.Ormawa,
+                    HP: matchedUser.HP || "081234567890",
+                    Email: matchedUser.Email || matchedUser.Username,
+                    Role: matchedUser.Role
                 };
+                
                 localStorage.setItem("logistel_session", JSON.stringify(userSession));
-                window.location.href = 'dashboard-user.html';
-            } 
-            else if (usernameInput === "adminfidelamarshallwa" && passwordInput === "salwa" && roleInput === "Admin") {
-                // Mock Session Admin
-                const adminSession = {
-                    Nama: "Fidela Marshallwa",
-                    Role: "Admin"
-                };
-                localStorage.setItem("logistel_session", JSON.stringify(adminSession));
-                window.location.href = 'dashboard-admin.html';
-            } 
-            else {
+                
+                // Redirect depending on role
+                if (matchedUser.Role === 'Admin') {
+                    window.location.href = 'dashboard-admin.html';
+                } else {
+                    window.location.href = 'dashboard-user.html';
+                }
+            } else {
                 // Show custom styled validation error
                 alertMsg.innerText = "Kredensial Akun Salah! Silakan cek kembali username, password, dan role Anda.";
                 alertBox.classList.remove('hidden');

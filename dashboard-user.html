@@ -129,17 +129,26 @@
                 <div class="absolute top-0 left-0 bottom-0 w-1.5 bg-telkom-700"></div>
                 
                 <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pl-2">
-                    <div class="flex items-center gap-4">
-                        <div class="w-12 h-12 rounded-xl bg-telkom-50 border border-telkom-100 text-telkom-700 flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
-                            AM
+                    <div class="flex items-center gap-4 justify-between w-full lg:w-auto">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 rounded-xl bg-telkom-50 border border-telkom-100 text-telkom-700 flex items-center justify-center font-bold text-lg shadow-sm shrink-0">
+                                AM
+                            </div>
+                            <div>
+                                <h3 class="text-base font-bold text-gray-900 flex flex-wrap items-center gap-2">
+                                    <span id="display-nama">Alya Maghfira</span>
+                                    <span class="bg-red-100 text-telkom-700 border border-red-200/50 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Mahasiswa</span>
+                                </h3>
+                                <p id="display-prodi" class="text-xs text-gray-500 mt-0.5">Program Studi S1 Teknik Informatika - Universitas Telkom</p>
+                            </div>
                         </div>
-                        <div>
-                            <h3 class="text-base font-bold text-gray-900 flex flex-wrap items-center gap-2">
-                                <span id="display-nama">Alya Maghfira</span>
-                                <span class="bg-red-100 text-telkom-700 border border-red-200/50 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Mahasiswa</span>
-                            </h3>
-                            <p id="display-prodi" class="text-xs text-gray-500 mt-0.5">Program Studi S1 Teknik Informatika - Universitas Telkom</p>
-                        </div>
+                        <!-- Edit Profile Button for Mobile/Tablet -->
+                        <button onclick="openEditProfileModal()" class="lg:hidden text-xs font-semibold text-telkom-700 hover:text-telkom-800 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shrink-0">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                            <span>Edit</span>
+                        </button>
                     </div>
                     
                     <!-- Pre-filled profile details -->
@@ -161,6 +170,13 @@
                             <p id="display-email" class="text-sm font-semibold text-gray-800 truncate mt-0.5" title="alyamaghfira@student.telkomuniversity.ac.id">alyamaghfira@student.telkomuniversity.ac.id</p>
                         </div>
                     </div>
+                    <!-- Edit Profile Button for Large Screens -->
+                    <button onclick="openEditProfileModal()" class="hidden lg:flex text-xs font-semibold text-telkom-700 hover:text-telkom-800 bg-red-50 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition items-center gap-1.5 shrink-0">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                        </svg>
+                        <span>Edit Profil</span>
+                    </button>
                 </div>
             </div>
 
@@ -513,6 +529,65 @@
         </div>
     </div>
 
+    <!-- ================= EDIT PROFILE MODAL ================= -->
+    <div id="edit-profile-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white border border-gray-200 w-full max-w-md rounded-2xl overflow-hidden shadow-xl transform scale-95 transition-transform duration-200">
+            <div class="px-6 py-4 border-b border-gray-150 flex justify-between items-center bg-gray-50">
+                <h4 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Edit Profil</h4>
+                <button onclick="closeEditProfileModal()" class="text-gray-400 hover:text-gray-600 transition focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="edit-profile-form" class="p-6 space-y-4">
+                <!-- Alert error message inside modal -->
+                <div id="modal-error-alert" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs hidden flex items-start gap-2">
+                    <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span id="modal-error-message" class="font-medium">Nomor handphone tidak boleh kosong!</span>
+                </div>
+
+                <!-- Read-Only Nama Field -->
+                <div>
+                    <label for="modal-nama" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Lengkap (Read-Only)</label>
+                    <input type="text" id="modal-nama" readonly 
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-250 rounded-xl text-gray-400 text-sm focus:outline-none cursor-not-allowed font-medium">
+                </div>
+
+                <!-- Read-Only NIM Field -->
+                <div>
+                    <label for="modal-nim" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">NIM (Read-Only)</label>
+                    <input type="text" id="modal-nim" readonly 
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-250 rounded-xl text-gray-400 text-sm focus:outline-none cursor-not-allowed font-mono">
+                </div>
+
+                <!-- Read-Only Ormawa Field -->
+                <div>
+                    <label for="modal-ormawa" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Ormawa (Read-Only)</label>
+                    <input type="text" id="modal-ormawa" readonly 
+                        class="w-full px-4 py-2.5 bg-gray-50 border border-gray-250 rounded-xl text-gray-400 text-sm focus:outline-none cursor-not-allowed font-medium">
+                </div>
+
+                <!-- Editable Nomor HP Field -->
+                <div>
+                    <label for="modal-hp" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nomor HP</label>
+                    <input type="text" id="modal-hp" required placeholder="Contoh: 081234567890"
+                        class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-telkom-500/20 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div class="pt-2 flex gap-3">
+                     <button type="button" onclick="closeEditProfileModal()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition border border-gray-200">
+                         Batal
+                     </button>
+                     <button type="submit" class="flex-1 py-2.5 bg-telkom-700 hover:bg-telkom-800 text-white text-xs font-semibold rounded-xl transition">
+                         Simpan Perubahan
+                     </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Client-Side Javascript Interactivity -->
     <script>
         // Synchronize dynamic session parameters from localStorage on load
@@ -728,6 +803,61 @@
                 modal.classList.add('hidden');
             }, 200);
         }
+
+        // --- Edit Profile Modal Logic ---
+        function openEditProfileModal() {
+            const userSession = JSON.parse(localStorage.getItem("logistel_session")) || {};
+            
+            document.getElementById("modal-nama").value = userSession.Nama || "";
+            document.getElementById("modal-nim").value = userSession.NIM || "";
+            document.getElementById("modal-ormawa").value = userSession.Ormawa || "";
+            document.getElementById("modal-hp").value = userSession.HP || "";
+
+            const modal = document.getElementById('edit-profile-modal');
+            const errorAlert = document.getElementById('modal-error-alert');
+            errorAlert.classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeEditProfileModal() {
+            const modal = document.getElementById('edit-profile-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        // Form Submit Handler for Edit Profile
+        document.getElementById('edit-profile-form').addEventListener('submit', function(e) {
+            const hpInput = document.getElementById('modal-hp').value;
+            const errorAlert = document.getElementById('modal-error-alert');
+            const errorMessage = document.getElementById('modal-error-message');
+
+            if (!hpInput || hpInput.trim() === '') {
+                e.preventDefault();
+                errorMessage.innerText = "Nomor handphone tidak boleh kosong!";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            e.preventDefault();
+
+            const userSession = JSON.parse(localStorage.getItem("logistel_session")) || {};
+            userSession.HP = hpInput.trim();
+            localStorage.setItem("logistel_session", JSON.stringify(userSession));
+
+            // Update UI elements in profile card banner
+            document.getElementById("display-hp").innerText = userSession.HP;
+
+            // Close modal
+            closeEditProfileModal();
+        });
     </script>
 </body>
 </html>

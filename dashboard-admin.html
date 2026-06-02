@@ -248,7 +248,7 @@
                         <h3 class="text-base font-bold text-gray-900">Daftar Pengguna Sistem</h3>
                         <p class="text-xs text-gray-550 text-gray-500">Kelola kredensial, role, dan data sub-table pengguna</p>
                     </div>
-                    <button class="flex items-center gap-2 py-2 px-4 bg-telkom-700 hover:bg-telkom-800 text-white font-bold rounded-xl text-xs shadow-sm transition-all duration-150">
+                    <button onclick="openTambahPenggunaModal()" class="flex items-center gap-2 py-2 px-4 bg-telkom-700 hover:bg-telkom-800 text-white font-bold rounded-xl text-xs shadow-sm transition-all duration-150">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
                         <span>Tambah Pengguna</span>
                     </button>
@@ -269,47 +269,8 @@
                                     <th class="px-6 py-4 text-center">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
-                                <tr>
-                                    <td class="px-6 py-4 font-mono text-gray-400">#001</td>
-                                    <td class="px-6 py-4 font-bold text-gray-900">Fidela Marshallwa</td>
-                                    <td class="px-6 py-4 text-gray-500">adminfidelamarshallwa</td>
-                                    <td class="px-6 py-4">
-                                        <span class="bg-red-50 border border-red-200 text-telkom-700 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">Admin</span>
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-gray-500">198711032014022</td>
-                                    <td class="px-6 py-4 text-gray-600">Logistik Kampus</td>
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex justify-center gap-2">
-                                            <button class="p-1.5 hover:bg-gray-100 rounded-lg text-telkom-700 transition" title="Edit Pengguna">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            </button>
-                                            <button class="p-1.5 hover:bg-gray-100 rounded-lg text-red-500 transition" title="Hapus Pengguna">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td class="px-6 py-4 font-mono text-gray-400">#002</td>
-                                    <td class="px-6 py-4 font-bold text-gray-900">Alya Maghfira</td>
-                                    <td class="px-6 py-4 text-gray-500">alyamaghfira@student.telkomuniversity.ac.id</td>
-                                    <td class="px-6 py-4">
-                                        <span class="bg-gray-100 border border-gray-200 text-gray-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">User</span>
-                                    </td>
-                                    <td class="px-6 py-4 font-mono text-gray-500">103112400240</td>
-                                    <td class="px-6 py-4 text-gray-600">HMIF</td>
-                                    <td class="px-6 py-4 text-center">
-                                        <div class="flex justify-center gap-2">
-                                            <button class="p-1.5 hover:bg-gray-100 rounded-lg text-telkom-700 transition" title="Edit Pengguna">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
-                                            </button>
-                                            <button class="p-1.5 hover:bg-gray-100 rounded-lg text-red-500 transition" title="Hapus Pengguna">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                            <tbody id="pengguna-table-body" class="divide-y divide-gray-200 text-sm text-gray-700">
+                                <!-- Will be rendered dynamically via localStorage -->
                             </tbody>
                         </table>
                     </div>
@@ -676,11 +637,179 @@
         </div>
     </div>
 
+    <!-- ================= MODAL: TAMBAH PENGGUNA ================= -->
+    <div id="tambah-pengguna-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white border border-gray-200 w-full max-w-md rounded-2xl overflow-hidden shadow-xl transform scale-95 transition-transform duration-200">
+            <div class="px-6 py-4 border-b border-gray-150 flex justify-between items-center bg-gray-50">
+                <h4 class="text-sm font-bold text-gray-900 uppercase">Tambah Pengguna Baru</h4>
+                <button onclick="closeTambahPenggunaModal()" class="text-gray-400 hover:text-gray-600 transition focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="form-tambah-pengguna" class="p-6 space-y-4">
+                <div id="tambah-pengguna-error-alert" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs hidden flex items-start gap-2">
+                    <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span id="tambah-pengguna-error-message" class="font-medium">Username tidak boleh kosong!</span>
+                </div>
+
+                <div>
+                    <label for="tambah-nama" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                    <input type="text" id="tambah-nama" required placeholder="Contoh: Alya Maghfira"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="tambah-username" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Username / Email SSO</label>
+                    <input type="text" id="tambah-username" required placeholder="Contoh: alyamaghfira@student.telkomuniversity.ac.id"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="tambah-password" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="tambah-password" required placeholder="••••••••"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="tambah-role" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Peran (Role)</label>
+                    <select id="tambah-role" required
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                        <option value="User">User (Mahasiswa / Ormawa)</option>
+                        <option value="Admin">Admin (Pengelola)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="tambah-identitas" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Detail Pengenal (NIM/NIP)</label>
+                    <input type="text" id="tambah-identitas" required placeholder="Contoh: 103112400240"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition font-mono">
+                </div>
+
+                <div>
+                    <label for="tambah-ormawa" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ormawa / Satker</label>
+                    <input type="text" id="tambah-ormawa" required placeholder="Contoh: HMIF / Biro Kemahasiswaan"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeTambahPenggunaModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-600 text-xs font-bold rounded-xl transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-telkom-700 hover:bg-telkom-800 text-white text-xs font-bold rounded-xl transition">
+                        Simpan Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ================= MODAL: EDIT PENGGUNA ================= -->
+    <div id="edit-pengguna-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-950/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-200">
+        <div class="bg-white border border-gray-200 w-full max-w-md rounded-2xl overflow-hidden shadow-xl transform scale-95 transition-transform duration-200">
+            <div class="px-6 py-4 border-b border-gray-150 flex justify-between items-center bg-gray-50">
+                <h4 class="text-sm font-bold text-gray-900 uppercase">Edit Data Pengguna</h4>
+                <button onclick="closeEditPenggunaModal()" class="text-gray-400 hover:text-gray-600 transition focus:outline-none">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            
+            <form id="form-edit-pengguna" class="p-6 space-y-4">
+                <input type="hidden" id="edit-pengguna-index">
+
+                <div id="edit-pengguna-error-alert" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs hidden flex items-start gap-2">
+                    <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <span id="edit-pengguna-error-message" class="font-medium">Username tidak boleh kosong!</span>
+                </div>
+
+                <div>
+                    <label for="edit-nama" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nama Lengkap</label>
+                    <input type="text" id="edit-nama" required placeholder="Contoh: Alya Maghfira"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="edit-username" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Username / Email SSO</label>
+                    <input type="text" id="edit-username" required placeholder="Contoh: alyamaghfira@student.telkomuniversity.ac.id"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="edit-password" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Password</label>
+                    <input type="password" id="edit-password" required placeholder="••••••••"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div>
+                    <label for="edit-role" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Peran (Role)</label>
+                    <select id="edit-role" required
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-800 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                        <option value="User">User (Mahasiswa / Ormawa)</option>
+                        <option value="Admin">Admin (Pengelola)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="edit-identitas" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Detail Pengenal (NIM/NIP)</label>
+                    <input type="text" id="edit-identitas" required placeholder="Contoh: 103112400240"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition font-mono">
+                </div>
+
+                <div>
+                    <label for="edit-ormawa" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Ormawa / Satker</label>
+                    <input type="text" id="edit-ormawa" required placeholder="Contoh: HMIF / Biro Kemahasiswaan"
+                        class="w-full px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 text-sm transition">
+                </div>
+
+                <div class="flex justify-end gap-3 pt-2">
+                    <button type="button" onclick="closeEditPenggunaModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 border border-gray-200 text-gray-600 text-xs font-bold rounded-xl transition">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-telkom-700 hover:bg-telkom-800 text-white text-xs font-bold rounded-xl transition">
+                        Simpan Perubahan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Client-Side Javascript Interactivity -->
     <script>
         // Load logged-in administrator name
         document.addEventListener("DOMContentLoaded", function() {
-            const adminSession = JSON.parse(localStorage.getItem("logistel_session"));
+            // Initialize default users database if not exists
+            if (!localStorage.getItem("logistel_users")) {
+                const defaultUsers = [
+                    {
+                        Nama: "Fidela Marshallwa",
+                        Username: "adminfidelamarshallwa",
+                        Password: "salwa",
+                        Role: "Admin",
+                        Identitas: "198711032014022",
+                        Ormawa: "Logistik Kampus",
+                        Email: "admin@logistel.id",
+                        HP: "081122334455"
+                    },
+                    {
+                        Nama: "Alya Maghfira",
+                        Username: "alyamaghfira@student.telkomuniversity.ac.id",
+                        Password: "alya",
+                        Role: "User",
+                        Identitas: "103112400240",
+                        Ormawa: "HMIF",
+                        Email: "alyamaghfira@student.telkomuniversity.ac.id",
+                        HP: "081234567890"
+                    }
+                ];
+                localStorage.setItem("logistel_users", JSON.stringify(defaultUsers));
+            }
+            renderPenggunaTable();
+
+            const adminSession = JSON.parse(localStorage.getItem("logistel_session")) || { Nama: "Administrator" };
             document.getElementById("display-admin-name").innerText = adminSession.Nama;
             
             // Set Avatar Initials in Sidebar footer
@@ -941,6 +1070,194 @@
             
             closeVerificationModal();
         });
+
+        // --- User Management CRUD Logic ---
+        function renderPenggunaTable() {
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            const tbody = document.getElementById("pengguna-table-body");
+            if (!tbody) return;
+            tbody.innerHTML = "";
+
+            users.forEach((u, index) => {
+                const idNum = String(index + 1).padStart(3, '0');
+                const row = document.createElement("tr");
+                row.className = "hover:bg-gray-50/50 transition";
+                row.innerHTML = `
+                    <td class="px-6 py-4 font-mono text-gray-400">#${idNum}</td>
+                    <td class="px-6 py-4 font-bold text-gray-900">${u.Nama}</td>
+                    <td class="px-6 py-4 text-gray-500">${u.Username}</td>
+                    <td class="px-6 py-4">
+                        <span class="${u.Role === 'Admin' ? 'bg-red-50 border border-red-200 text-telkom-700' : 'bg-gray-100 border border-gray-200 text-gray-600'} text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">${u.Role}</span>
+                    </td>
+                    <td class="px-6 py-4 font-mono text-gray-500">${u.Identitas}</td>
+                    <td class="px-6 py-4 text-gray-600">${u.Ormawa}</td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex justify-center gap-2">
+                            <button onclick="openEditPenggunaModal(${index})" class="p-1.5 hover:bg-gray-100 rounded-lg text-telkom-700 transition" title="Edit Pengguna">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                            </button>
+                            <button onclick="deletePengguna(${index})" class="p-1.5 hover:bg-gray-100 rounded-lg text-red-500 transition" title="Hapus Pengguna">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // --- Tambah Pengguna Modal Logic ---
+        function openTambahPenggunaModal() {
+            const modal = document.getElementById('tambah-pengguna-modal');
+            document.getElementById('form-tambah-pengguna').reset();
+            document.getElementById('tambah-pengguna-error-alert').classList.add('hidden');
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeTambahPenggunaModal() {
+            const modal = document.getElementById('tambah-pengguna-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        document.getElementById('form-tambah-pengguna').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const nama = document.getElementById('tambah-nama').value.trim();
+            const username = document.getElementById('tambah-username').value.trim();
+            const password = document.getElementById('tambah-password').value;
+            const role = document.getElementById('tambah-role').value;
+            const identitas = document.getElementById('tambah-identitas').value.trim();
+            const ormawa = document.getElementById('tambah-ormawa').value.trim();
+            const errorAlert = document.getElementById('tambah-pengguna-error-alert');
+            const errorMsg = document.getElementById('tambah-pengguna-error-message');
+
+            if (!username) {
+                errorMsg.innerText = "Username tidak boleh kosong!";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            
+            // Check if username already exists to prevent duplicate username issues
+            if (users.some(u => u.Username.toLowerCase() === username.toLowerCase())) {
+                errorMsg.innerText = "Username sudah terdaftar!";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            users.push({
+                Nama: nama,
+                Username: username,
+                Password: password,
+                Role: role,
+                Identitas: identitas,
+                Ormawa: ormawa,
+                Email: username,
+                HP: "081234567890" // Default Phone Number
+            });
+
+            localStorage.setItem("logistel_users", JSON.stringify(users));
+            renderPenggunaTable();
+            closeTambahPenggunaModal();
+        });
+
+        // --- Edit Pengguna Modal Logic ---
+        function openEditPenggunaModal(index) {
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            const user = users[index];
+            if (!user) return;
+
+            document.getElementById('edit-pengguna-index').value = index;
+            document.getElementById('edit-nama').value = user.Nama || '';
+            document.getElementById('edit-username').value = user.Username || '';
+            document.getElementById('edit-password').value = user.Password || '';
+            document.getElementById('edit-role').value = user.Role || 'User';
+            document.getElementById('edit-identitas').value = user.Identitas || '';
+            document.getElementById('edit-ormawa').value = user.Ormawa || '';
+            
+            document.getElementById('edit-pengguna-error-alert').classList.add('hidden');
+
+            const modal = document.getElementById('edit-pengguna-modal');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeEditPenggunaModal() {
+            const modal = document.getElementById('edit-pengguna-modal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('div').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 200);
+        }
+
+        document.getElementById('form-edit-pengguna').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const index = parseInt(document.getElementById('edit-pengguna-index').value);
+            const nama = document.getElementById('edit-nama').value.trim();
+            const username = document.getElementById('edit-username').value.trim();
+            const password = document.getElementById('edit-password').value;
+            const role = document.getElementById('edit-role').value;
+            const identitas = document.getElementById('edit-identitas').value.trim();
+            const ormawa = document.getElementById('edit-ormawa').value.trim();
+            
+            const errorAlert = document.getElementById('edit-pengguna-error-alert');
+            const errorMsg = document.getElementById('edit-pengguna-error-message');
+
+            if (!username) {
+                errorMsg.innerText = "Username tidak boleh kosong!";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            
+            // Check for duplicate username except itself
+            if (users.some((u, idx) => idx !== index && u.Username.toLowerCase() === username.toLowerCase())) {
+                errorMsg.innerText = "Username sudah terdaftar oleh pengguna lain!";
+                errorAlert.classList.remove('hidden');
+                return;
+            }
+
+            if (users[index]) {
+                users[index].Nama = nama;
+                users[index].Username = username;
+                users[index].Password = password;
+                users[index].Role = role;
+                users[index].Identitas = identitas;
+                users[index].Ormawa = ormawa;
+                users[index].Email = username; // Sync email with username
+                
+                localStorage.setItem("logistel_users", JSON.stringify(users));
+                renderPenggunaTable();
+                closeEditPenggunaModal();
+            }
+        });
+
+        // --- Delete Pengguna Logic ---
+        function deletePengguna(index) {
+            const users = JSON.parse(localStorage.getItem("logistel_users")) || [];
+            const user = users[index];
+            if (!user) return;
+
+            if (confirm(`Apakah Anda yakin ingin menghapus pengguna "${user.Nama}"?`)) {
+                users.splice(index, 1);
+                localStorage.setItem("logistel_users", JSON.stringify(users));
+                renderPenggunaTable();
+            }
+        }
     </script>
 </body>
 </html>
