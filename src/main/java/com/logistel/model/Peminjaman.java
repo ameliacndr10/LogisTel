@@ -1,8 +1,8 @@
 package com.logistel.model;
 
 /**
- * Kelas Peminjaman berfungsi sebagai kelas asosiasi utama untuk mencatat 
- * transaksi peminjaman barang maupun ruangan di LogisTel.
+ * PILAR ENKAPSULASI: Kelas Peminjaman berfungsi sebagai kelas asosiasi utama untuk mencatat 
+ * transaksi peminjaman barang maupun ruangan di LogisTel. Dilengkapi enkapsulasi dengan validasi setter.
  */
 public class Peminjaman {
     private int idPeminjaman;
@@ -13,12 +13,12 @@ public class Peminjaman {
     private String barcode;
 
     /**
-     * Constructor kosong/default.
+     * PILAR CONSTRUCTOR OVERLOADING: Constructor 1 - Default Constructor
      */
     public Peminjaman() {}
 
     /**
-     * Constructor lengkap untuk inisialisasi Peminjaman.
+     * PILAR CONSTRUCTOR OVERLOADING: Constructor 2 - Constructor Lengkap
      *
      * @param idPeminjaman   ID unik peminjaman
      * @param userPeminjam   User yang melakukan peminjaman
@@ -28,21 +28,24 @@ public class Peminjaman {
      * @param barcode        Barcode unik transaksi
      */
     public Peminjaman(int idPeminjaman, User userPeminjam, String tanggalMulai, String tanggalSelesai, String status, String barcode) {
-        this.idPeminjaman = idPeminjaman;
-        this.userPeminjam = userPeminjam;
-        this.tanggalMulai = tanggalMulai;
-        this.tanggalSelesai = tanggalSelesai;
-        this.status = status;
-        this.barcode = barcode;
+        setIdPeminjaman(idPeminjaman);
+        setUserPeminjam(userPeminjam);
+        setTanggalMulai(tanggalMulai);
+        setTanggalSelesai(tanggalSelesai);
+        setStatus(status);
+        setBarcode(barcode);
     }
 
-    // Getter dan Setter
+    // Getter dan Setter dengan Validasi (Enkapsulasi)
 
     public int getIdPeminjaman() {
         return idPeminjaman;
     }
 
     public void setIdPeminjaman(int idPeminjaman) {
+        if (idPeminjaman <= 0) {
+            throw new IllegalArgumentException("ID Peminjaman harus lebih besar dari 0.");
+        }
         this.idPeminjaman = idPeminjaman;
     }
 
@@ -51,6 +54,9 @@ public class Peminjaman {
     }
 
     public void setUserPeminjam(User userPeminjam) {
+        if (userPeminjam == null) {
+            throw new IllegalArgumentException("User peminjam tidak boleh kosong/null.");
+        }
         this.userPeminjam = userPeminjam;
     }
 
@@ -59,6 +65,9 @@ public class Peminjaman {
     }
 
     public void setTanggalMulai(String tanggalMulai) {
+        if (tanggalMulai == null || tanggalMulai.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tanggal mulai tidak boleh kosong.");
+        }
         this.tanggalMulai = tanggalMulai;
     }
 
@@ -67,6 +76,9 @@ public class Peminjaman {
     }
 
     public void setTanggalSelesai(String tanggalSelesai) {
+        if (tanggalSelesai == null || tanggalSelesai.trim().isEmpty()) {
+            throw new IllegalArgumentException("Tanggal selesai tidak boleh kosong.");
+        }
         this.tanggalSelesai = tanggalSelesai;
     }
 
@@ -75,6 +87,9 @@ public class Peminjaman {
     }
 
     public void setStatus(String status) {
+        if (status == null || status.trim().isEmpty()) {
+            throw new IllegalArgumentException("Status tidak boleh kosong.");
+        }
         this.status = status;
     }
 
@@ -83,6 +98,9 @@ public class Peminjaman {
     }
 
     public void setBarcode(String barcode) {
+        if (barcode == null || barcode.trim().isEmpty()) {
+            throw new IllegalArgumentException("Barcode tidak boleh kosong.");
+        }
         this.barcode = barcode;
     }
 }
