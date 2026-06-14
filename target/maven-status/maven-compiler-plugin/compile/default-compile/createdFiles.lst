@@ -11,9 +11,11 @@ com\logistel\config\DatabaseConfig.class
 com\logistel\Main.class
 com\logistel\model\User.class
 com\logistel\Application.class
+com\logistel\controller\LogoutServlet.class
 com\logistel\model\PeminjamanService.class
 com\logistel\controller\VerifikasiServlet.class
 com\logistel\model\Pengguna.class
+com\logistel\controller\PengembalianServlet.class
 com\logistel\controller\TambahBarangServlet.class
 com\logistel\model\DetailPeminjamanBarang.class
 com\logistel\model\Admin.class

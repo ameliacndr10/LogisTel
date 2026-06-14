@@ -174,7 +174,7 @@
                     <div class="flex items-center gap-3 w-full sm:w-auto">
                         <button onclick="openTambahModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition shadow-sm whitespace-nowrap flex items-center gap-1.5">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            Tambah Barang
+                            <span>Tambah Barang</span>
                         </button>
 
                         <div class="relative w-full sm:w-64">
@@ -211,10 +211,10 @@
                     <%          } 
 
                                 // --- RUANGAN ---
-                                ResultSet rsRuang = stmt.executeQuery("SELECT * FROM ruangan ORDER BY id_ruangan DESC");
-                                while(rsRuang.next()) {
-                                    String idR = rsRuang.getString("id_ruangan");
-                                    String namaR = rsRuang.getString("nama_ruangan");
+                                ResultSet rsRoom = stmt.executeQuery("SELECT * FROM ruangan ORDER BY id_ruangan DESC");
+                                while(rsRoom.next()) {
+                                    String idR = rsRoom.getString("id_ruangan");
+                                    String namaR = rsRoom.getString("nama_ruangan");
                     %>
                                 <div class="catalog-card bg-white border border-gray-200 rounded-2xl p-5 shadow-sm group" data-type="Ruangan" data-name="<%= namaR.toLowerCase() %>">
                                     <h4 class="text-base font-bold text-gray-900 uppercase"><%= namaR %></h4>
@@ -246,42 +246,103 @@
                                     <th class="px-6 py-4">Nama Ormawa</th>
                                     <th class="px-6 py-4">Kegiatan</th>
                                     <th class="px-6 py-4">Detail Inventaris</th>
+                                    <th class="px-6 py-4">Waktu Pinjam</th>
                                     <th class="px-6 py-4 text-center">Aksi Verifikasi</th>
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
                                 <%
                                     if(conn != null) {
-                                        ResultSet rsVerif = stmt.executeQuery(
-                                            "SELECT p.id_peminjaman, u.nama_ormawa, p.status, dpb.nama_kegiatan, b.nama_barang " +
-                                            "FROM peminjaman p " +
-                                            "JOIN user u ON p.id_user = u.id_user " +
-                                            "JOIN detail_peminjaman_barang dpb ON p.id_peminjaman = dpb.id_peminjaman " +
-                                            "JOIN barang b ON dpb.id_barang = b.id_barang " +
-                                            "WHERE p.status = 'PENDING'"
-                                        );
-                                        boolean hasPending = false;
-                                        while(rsVerif.next()) {
-                                            hasPending = true;
+                                        try {
+                                            // PERUBAHAN 2: Query dimodifikasi dengan menyertakan p.tanggal_mulai dan p.tanggal_selesai
+                                            String sqlVerif = "SELECT p.id_peminjaman, u.nama_ormawa, p.status, p.tanggal_mulai, p.tanggal_selesai, " +
+                                                            "COALESCE(p.nama_kegiatan, dpb.nama_kegiatan, dpr.nama_kegiatan, '-') AS nama_kegiatan, " +
+                                                            "COALESCE(b.nama_barang, r.nama_ruangan, 'Fasilitas Ruangan') AS nama_inventaris, " +
+                                                            "COALESCE(dpb.jumlah, 1) AS jumlah_pinjam " +
+                                                            "FROM peminjaman p " +
+                                                            "LEFT JOIN user u ON p.id_user = u.id_user " +
+                                                            "LEFT JOIN detail_peminjaman_barang dpb ON p.id_peminjaman = dpb.id_peminjaman " +
+                                                            "LEFT JOIN barang b ON dpb.id_barang = b.id_barang " +
+                                                            "LEFT JOIN detail_peminjaman_ruangan dpr ON p.id_peminjaman = dpr.id_peminjaman " +
+                                                            "LEFT JOIN ruangan r ON dpr.id_ruangan = r.id_ruangan " +
+                                                            "WHERE p.status IN ('PENDING', 'RETURN_REQUESTED') " +
+                                                            "ORDER BY p.id_peminjaman DESC";
+                                                            
+                                            ResultSet rsVerif = stmt.executeQuery(sqlVerif);
+                                            boolean hasPending = false;
+                                            while(rsVerif.next()) {
+                                                hasPending = true;
+                                                String idPem = rsVerif.getString("id_peminjaman");
+                                                String ormawaName = rsVerif.getString("nama_ormawa");
+                                                String namaKegiatan = rsVerif.getString("nama_kegiatan");
+                                                String namaInventaris = rsVerif.getString("nama_inventaris");
+                                                String statusSkg = rsVerif.getString("status");
+                                                int jumlahPinjam = rsVerif.getInt("jumlah_pinjam");
+                                                
+                                                // PERUBAHAN 3: Ambil nilai String tanggal dari query induk database
+                                                String tglMulai = rsVerif.getString("tanggal_mulai");
+                                                String tglSelesai = rsVerif.getString("tanggal_selesai");
+                                                
+                                                if(ormawaName == null || ormawaName.trim().isEmpty()) {
+                                                    ormawaName = "Mahasiswa Umum";
+                                                }
                                 %>
-                                    <tr>
-                                        <td class="px-6 py-4 font-mono font-semibold text-telkom-700">#<%= rsVerif.getString("id_peminjaman") %></td>
-                                        <td class="px-6 py-4 font-bold"><%= rsVerif.getString("nama_ormawa") %></td>
-                                        <td class="px-6 py-4"><%= rsVerif.getString("nama_kegiatan") %></td>
-                                        <td class="px-6 py-4"><%= rsVerif.getString("nama_barang") %></td>
+                                    <tr class="hover:bg-gray-50/50 transition">
+                                        <td class="px-6 py-4 font-mono font-semibold text-telkom-700">#<%= idPem %></td>
+                                        <td class="px-6 py-4 font-bold"><%= ormawaName %></td>
+                                        <td class="px-6 py-4">
+                                            <div class="flex flex-col gap-1">
+                                                <span class="text-gray-900 font-medium"><%= namaKegiatan %></span>
+                                                <% if("RETURN_REQUESTED".equalsIgnoreCase(statusSkg)) { %>
+                                                    <span class="w-max bg-indigo-50 text-indigo-700 text-[10px] font-bold px-2 py-0.5 rounded border border-indigo-200 uppercase tracking-wide">REQUEST RETUR</span>
+                                                <% } else { %>
+                                                    <span class="w-max bg-amber-50 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded border border-amber-200 uppercase tracking-wide">PINJAM BARU</span>
+                                                <% } %>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">
+                                            <%= namaInventaris %> 
+                                            <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                x<%= jumlahPinjam %>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-xs">
+                                            <div class="flex flex-col gap-0.5">
+                                                <span class="text-gray-700 font-medium">Mulai: <%= tglMulai %></span>
+                                                <span class="text-gray-400 text-[11px]">Selesai: <%= tglSelesai %></span>
+                                            </div>
+                                        </td>
                                         <td class="px-6 py-4 text-center">
-                                            <form action="${pageContext.request.contextPath}/verifikasi-servlet" method="POST" class="flex items-center justify-center gap-3">
-                                                <input type="hidden" name="id" value="<%= rsVerif.getString("id_peminjaman") %>">
-                                                <button name="action" value="APPROVED" class="text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition">Setujui</button>
-                                                <button name="action" value="REJECTED" class="text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">Tolak</button>
+                                            <form action="${pageContext.request.contextPath}/verifikasi-servlet" method="POST" class="flex items-center justify-center gap-2">
+                                                <input type="hidden" name="id" value="<%= idPem %>">
+                                                
+                                                <% if ("RETURN_REQUESTED".equalsIgnoreCase(statusSkg)) { %>
+                                                    <button name="action" value="RETURNED" class="text-xs font-bold bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl transition shadow-sm">
+                                                        Terima Pengembalian
+                                                    </button>
+                                                <% } else { %>
+                                                    <button name="action" value="APPROVED" class="text-xs font-bold bg-emerald-50 text-emerald-600 hover:bg-emerald-100 border border-emerald-200 px-3 py-1.5 rounded-lg transition">Setujui</button>
+                                                    <button name="action" value="REJECTED" class="text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200 px-3 py-1.5 rounded-lg transition">Tolak</button>
+                                                <% } %>
                                             </form>
                                         </td>
                                     </tr>
-                                <%      } 
-                                        if(!hasPending) { %>
-                                            <tr><td colspan="5" class="px-6 py-8 text-center text-gray-500 font-medium">Tidak ada pengajuan yang menunggu verifikasi.</td></tr>
-                                <%      } 
-                                    } %>
+                                <%      
+                                            } 
+                                            if(!hasPending) { 
+                                %>
+                                        <tr><td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium bg-white">Tidak ada antrean verifikasi (Pinjam/Retur).</td></tr>
+                                <%      
+                                            }
+                                            rsVerif.close();
+                                        } catch(Exception e) {
+                                %>
+                                        <tr><td colspan="6" class="px-6 py-8 text-center text-red-500 bg-white">Gagal memuat data verifikasi: <%= e.getMessage() %></td></tr>
+                                <%
+                                            e.printStackTrace();
+                                        }
+                                    } 
+                                %>
                             </tbody>
                         </table>
                     </div>
@@ -459,7 +520,6 @@
         }
 
         function openEditModal(id, nama, stok, type) {
-            // Debug: Cek apakah elemen ditemukan
             const editId = document.getElementById('edit-id');
             const editNama = document.getElementById('edit-nama');
             const editStok = document.getElementById('edit-stok');
@@ -479,19 +539,76 @@
         }
 
         function hapusBarang(id) {
-            if(confirm('Yakin ingin menghapus barang ini?')) {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '${pageContext.request.contextPath}/barang-action';
-                form.innerHTML = '<input type="hidden" name="action" value="hapus"><input type="hidden" name="id" value="'+id+'">';
-                document.body.appendChild(form);
-                form.submit();
-            }
+            Swal.fire({
+                title: "Apakah Anda yakin?",
+                text: "Data inventaris ini akan dihapus permanen dari database!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#dc2626", 
+                cancelButtonColor: "#6b7280",  
+                confirmButtonText: "Ya, Hapus!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '${pageContext.request.contextPath}/barang-action';
+                    form.innerHTML = '<input type="hidden" name="action" value="hapus"><input type="hidden" name="id" value="' + id + '">';
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
         }
-        
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <%
+        String statusVerifikasi = request.getParameter("status");
+    %>
+    <script>
         document.addEventListener("DOMContentLoaded", function() {
-            if(window.location.search.includes('status=tambah_sukses')) {
-                // Notifikasi bisa ditambahkan di sini nantinya
+            const status = "<%= (statusVerifikasi != null) ? statusVerifikasi : "" %>";
+
+            if (status === "approved_sukses" || status === "success_approved" || status === "edit_sukses") {
+                let t = "Pengajuan Disetujui!";
+                let tx = "Status peminjaman berhasil diperbarui menjadi APPROVED.";
+                let i = "success";
+                let c = "#10b981";
+
+                if(status === "edit_sukses") {
+                    t = "Data Diperbarui!";
+                    tx = "Perubahan informasi inventaris berhasil disimpan.";
+                    c = "#3b82f6";
+                }
+
+                Swal.fire({ title: t, text: tx, icon: i, confirmButtonColor: c, confirmButtonText: "OK" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            } else if (status === "rejected_sukses" || status === "success_rejected") {
+                Swal.fire({ title: "Pengajuan Ditolak!", text: "Status peminjaman berhasil diperbarui menjadi REJECTED.", icon: "warning", confirmButtonColor: "#ef4444", confirmButtonText: "OK" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            } else if (status === "return_sukses") {
+                Swal.fire({ title: "Pengembalian Selesai!", text: "Logistik sukses diterima kembali dan stok gudang otomatis ditambahkan.", icon: "success", confirmButtonColor: "#10b981", confirmButtonText: "Selesai" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            } else if (status === "hapus_sukses") {
+                Swal.fire({ title: "Berhasil Dihapus!", text: "Data inventaris telah dihapus secara permanen dari sistem.", icon: "success", confirmButtonColor: "#ef4444", confirmButtonText: "OK" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            } else if (status === "tambah_sukses") {
+                Swal.fire({ title: "Barang Ditambahkan!", text: "Data inventaris baru berhasil disimpan ke database.", icon: "success", confirmButtonColor: "#059669", confirmButtonText: "OK" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            } else if (status === "tambah_gagal" || status === "edit_gagal" || status === "hapus_gagal" || status === "gagal") {
+                Swal.fire({ title: "Gagal Memproses!", text: "Terjadi kendala interaksi dengan database sistem.", icon: "error", confirmButtonColor: "#dc2626", confirmButtonText: "Coba Lagi" })
+                    .then(() => { window.history.replaceState({}, document.title, window.location.pathname); });
+            // Tambahkan potongan ini di dalam deretan pengecekan status SweetAlert dashboard-admin.jsp
+            } else if (status === "gagal_bentrok") {
+                Swal.fire({
+                    title: "Gagal Menyetujui!",
+                    text: "Jadwal barang atau ruangan pada tanggal tersebut sudah dikunci/disetujui oleh admin untuk ormawa lain.",
+                    icon: "error",
+                    confirmButtonColor: "#ef4444",
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
             }
         });
     </script>

@@ -224,7 +224,10 @@
                                     <span class="bg-red-50 text-telkom-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Barang</span>
                                     <h4 class="text-base font-bold text-gray-900 mt-2"><%= rsB.getString("nama_barang") %></h4>
                                     <p class="text-xs text-gray-500 mb-4">Stok: <%= rsB.getInt("stok") %></p>
-                                    <button onclick="quickBorrow('Barang', '<%= rsB.getString("nama_barang") %>')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 hover:text-white rounded-xl text-xs font-semibold">Pinjam Sekarang</button>
+                                    <button onclick="quickBorrow('Barang', '<%= rsB.getInt("id_barang") %>', '<%= rsB.getString("nama_barang") %>')" 
+                                            class="w-full py-2 bg-gray-100 hover:bg-telkom-700 hover:text-white rounded-xl text-xs font-semibold">
+                                        Pinjam Sekarang
+                                    </button>
                                 </div>
                     <%
                             }
@@ -235,7 +238,10 @@
                                 <div class="catalog-card bg-white border border-gray-200 rounded-2xl p-5 shadow-sm" data-type="Ruangan" data-name="<%= rsR.getString("nama_ruangan").toLowerCase() %>">
                                     <span class="bg-blue-50 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Ruangan</span>
                                     <h4 class="text-base font-bold text-gray-900 mt-2"><%= rsR.getString("nama_ruangan") %></h4>
-                                    <button onclick="quickBorrow('Ruangan', '<%= rsR.getString("nama_ruangan") %>')" class="w-full py-2 bg-gray-100 hover:bg-telkom-700 hover:text-white rounded-xl text-xs font-semibold">Pinjam Sekarang</button>
+                                    <button onclick="quickBorrow('Ruangan', '<%= rsR.getInt("id_ruangan") %>', '<%= rsR.getString("nama_ruangan") %>')" 
+                                            class="w-full py-2 bg-gray-100 hover:bg-telkom-700 hover:text-white rounded-xl text-xs font-semibold">
+                                        Pinjam Sekarang
+                                    </button>
                                 </div>
                     <%
                             }
@@ -282,20 +288,25 @@
                             </div>
                             <div>
                                 <label for="id_item" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pilih Item</label>
-                                <select name="id_item" id="id_item" required class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none">
+                                <select name="id_item" id="id_item" required class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none appearance-none cursor-pointer">
                                     <option value="" disabled selected>-- Pilih Item --</option>
                                     <%
-                                        // Membuka koneksi baru khusus form agar tidak bentrok dengan bagian katalog atas
                                         Connection connForm = null;
                                         Statement stmtForm = null;
                                         ResultSet rsItems = null;
                                         try {
                                             connForm = DatabaseConfig.getConnection();
                                             stmtForm = connForm.createStatement();
-                                            rsItems = stmtForm.executeQuery("SELECT id_barang as id, nama_barang as nama, 'Barang' as tipe FROM barang UNION SELECT id_ruangan as id, nama_ruangan as nama, 'Ruangan' as tipe FROM ruangan");
+                                            
+                                            // PERUBAHAN: Gabungkan karakter teks pembeda unik pada kolom ID value
+                                            String sqlUnion = "SELECT CONCAT('BARANG_', id_barang) as id, id_barang as id_asli, nama_barang as nama, 'Barang' as tipe FROM barang " +
+                                                            "UNION " +
+                                                            "SELECT CONCAT('RUANGAN_', id_ruangan) as id, id_ruangan as id_asli, nama_ruangan as nama, 'Ruangan' as tipe FROM ruangan";
+                                                            
+                                            rsItems = stmtForm.executeQuery(sqlUnion);
                                             while(rsItems.next()) {
                                     %>
-                                                <option value="<%= rsItems.getString("id") %>" data-type="<%= rsItems.getString("tipe") %>" class="item-option hidden">
+                                                <option value="<%= rsItems.getString("id") %>" data-id-asli="<%= rsItems.getInt("id_asli") %>" data-type="<%= rsItems.getString("tipe") %>" class="item-option hidden">
                                                     <%= rsItems.getString("nama") %>
                                                 </option>
                                     <%
@@ -350,7 +361,7 @@
                 </div>
             </section>
 
-            <section id="riwayat-section" class="tab-content hidden space-y-6">
+<section id="riwayat-section" class="tab-content hidden space-y-6">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Riwayat Peminjaman</h3>
                     <p class="text-xs text-gray-500">Daftar transaksi dan berkas yang diajukan oleh akun login Anda</p>
@@ -381,8 +392,8 @@
                                         try {
                                             connRiwayat = DatabaseConfig.getConnection();
                                             
-                                            // Query mengambil data peminjaman beserta nama barang/ruangan yang disinkronkan dari tabel detail
-                                            String sqlRiwayat = "SELECT p.id_peminjaman, p.tanggal_mulai, p.status, p.barcode, p.nama_kegiatan, " +
+                                            // Ambil p.tanggal_selesai juga dari database
+                                            String sqlRiwayat = "SELECT p.id_peminjaman, p.tanggal_mulai, p.tanggal_selesai, p.status, p.barcode, p.nama_kegiatan, " +
                                                                 "COALESCE(b.nama_barang, r.nama_ruangan) AS nama_item " +
                                                                 "FROM peminjaman p " +
                                                                 "LEFT JOIN detail_peminjaman_barang db ON p.id_peminjaman = db.id_peminjaman " +
@@ -403,44 +414,58 @@
                                                 String namaKeg = rsRiwayat.getString("nama_kegiatan");
                                                 String namaItem = rsRiwayat.getString("nama_item");
                                                 String tglMulai = rsRiwayat.getString("tanggal_mulai");
+                                                String tglSelesai = rsRiwayat.getString("tanggal_selesai");
                                                 String status = rsRiwayat.getString("status");
                                                 String barcode = rsRiwayat.getString("barcode");
                                                 
                                                 if(namaItem == null) namaItem = "Fasilitas Ruangan";
                                 %>
-                                                <tr class="border-b border-gray-150">
+                                                <tr class="border-b border-gray-150 hover:bg-gray-50/50 transition">
                                                     <td class="px-6 py-4 font-mono text-telkom-700">#<%= idTrans %></td>
                                                     <td class="px-6 py-4 font-semibold text-gray-900"><%= namaKeg %></td>
                                                     <td class="px-6 py-4 text-gray-600"><%= namaItem %></td>
-                                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs"><%= tglMulai %></td>
+                                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs">
+                                                        <div class="flex flex-col gap-0.5">
+                                                            <span class="text-gray-700 font-medium">Mulai: <%= tglMulai %></span>
+                                                            <span class="text-gray-400 text-[11px]">Selesai: <%= tglSelesai %></span>
+                                                        </div>
+                                                    </td>
                                                     <td class="px-6 py-4">
                                                         <% if ("PENDING".equalsIgnoreCase(status)) { %>
                                                             <span class="inline-flex items-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">PENDING</span>
-                                                        <% } else if ("DISETUJUI".equalsIgnoreCase(status)) { %>
-                                                            <span class="inline-flex items-center gap-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">APPROVED</span>
+                                                        <% } else if ("APPROVED".equalsIgnoreCase(status)) { %>
+                                                            <div class="flex flex-col gap-2 items-start">
+                                                                <span class="inline-flex items-center gap-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">APPROVED</span>
+                                                                <button onclick="ajukanPengembalian('<%= idTrans %>')" class="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 hover:text-white bg-blue-50 hover:bg-blue-600 border border-blue-200 hover:border-blue-600 px-2.5 py-1 rounded-lg transition duration-150 shadow-sm">
+                                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 7H16"></path></svg>
+                                                                    <span>Kembalikan</span>
+                                                                </button>
+                                                            </div>
+                                                        <% } else if ("RETURN_REQUESTED".equalsIgnoreCase(status)) { %>
+                                                            <span class="inline-flex items-center gap-1.5 text-xs text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide text-[10px]">Menunggu Retur</span>
+                                                        <% } else if ("RETURNED".equalsIgnoreCase(status)) { %>
+                                                            <span class="inline-flex items-center gap-1.5 text-xs text-gray-700 font-semibold bg-gray-100 border border-gray-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide text-[10px]">Dikembalikan</span>
                                                         <% } else { %>
                                                             <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">REJECTED</span>
                                                         <% } %>
                                                     </td>
-                                                    <td class="px-6 py-4 text-center text-gray-500 font-mono text-xs">
-                                                        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')" class="text-telkom-600 hover:text-telkom-800 font-bold underline">
+                                                    <td class="px-6 py-4 text-center">
+                                                        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')" class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">
                                                             Lihat Barcode
                                                         </button>
                                                     </td>
                                                 </tr>
                                 <%
                                             }
-                                            
                                             if (!adaData) {
                                                 out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-gray-500 font-medium bg-white'>Belum ada riwayat pengajuan peminjaman di database.</td></tr>");
                                             }
-                                            
                                         } catch (Exception e) {
                                             out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-red-500 bg-white'>Gagal memuat database: " + e.getMessage() + "</td></tr>");
                                         } finally {
-                                            if (rsRiwayat != null) try { rsRiwayat.close(); } catch(Exception e) {}
-                                            if (psRiwayat != null) try { psRiwayat.close(); } catch(Exception e) {}
-                                            if (connRiwayat != null) try { connRiwayat.close(); } catch(Exception e) {}
+                                            if (rsRiwayat != null) rsRiwayat.close();
+                                            if (psRiwayat != null) psRiwayat.close();
+                                            if (connRiwayat != null) connRiwayat.close();
                                         }
                                     } else {
                                         out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-gray-500 bg-white'>Sesi berakhir, silakan login kembali.</td></tr>");
@@ -451,7 +476,6 @@
                     </div>
                 </div>
             </section>
-
         </div>
     </main>
 
@@ -463,48 +487,20 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            
             <div class="p-6 flex flex-col items-center text-center space-y-4">
                 <p class="text-xs text-gray-500">Tunjukkan barcode ini kepada petugas logistik di gudang untuk melakukan serah terima inventaris.</p>
-                
                 <div class="bg-white p-4 rounded-xl border border-gray-200 w-full flex flex-col items-center shadow-sm">
                     <svg class="w-full h-24" viewBox="0 0 100 30" xmlns="http://www.w3.org/2000/svg">
                         <rect width="100" height="30" fill="white"/>
-                        <rect x="5" y="2" width="2" height="20" fill="black"/>
-                        <rect x="9" y="2" width="1" height="20" fill="black"/>
-                        <rect x="12" y="2" width="3" height="20" fill="black"/>
-                        <rect x="17" y="2" width="1" height="20" fill="black"/>
-                        <rect x="19" y="2" width="2" height="20" fill="black"/>
-                        <rect x="23" y="2" width="4" height="20" fill="black"/>
-                        <rect x="29" y="2" width="1" height="20" fill="black"/>
-                        <rect x="32" y="2" width="2" height="20" fill="black"/>
-                        <rect x="36" y="2" width="1" height="20" fill="black"/>
-                        <rect x="39" y="2" width="3" height="20" fill="black"/>
-                        <rect x="44" y="2" width="2" height="20" fill="black"/>
-                        <rect x="48" y="2" width="1" height="20" fill="black"/>
-                        <rect x="51" y="2" width="4" height="20" fill="black"/>
-                        <rect x="57" y="2" width="2" height="20" fill="black"/>
-                        <rect x="61" y="2" width="1" height="20" fill="black"/>
-                        <rect x="64" y="2" width="3" height="20" fill="black"/>
-                        <rect x="69" y="2" width="2" height="20" fill="black"/>
-                        <rect x="73" y="2" width="1" height="20" fill="black"/>
-                        <rect x="76" y="2" width="4" height="20" fill="black"/>
-                        <rect x="82" y="2" width="2" height="20" fill="black"/>
-                        <rect x="86" y="2" width="1" height="20" fill="black"/>
-                        <rect x="89" y="2" width="3" height="20" fill="black"/>
-                        <rect x="94" y="2" width="2" height="20" fill="black"/>
-                        <text x="50" y="27" font-family="monospace" font-size="4" text-anchor="middle" fill="black" id="barcode-display-val">HMTF-881-BAR</text>
+                        <rect x="5" y="2" width="2" height="20" fill="black"/> <rect x="9" y="2" width="1" height="20" fill="black"/> <rect x="12" y="2" width="3" height="20" fill="black"/> <rect x="17" y="2" width="1" height="20" fill="black"/> <rect x="19" y="2" width="2" height="20" fill="black"/> <rect x="23" y="2" width="4" height="20" fill="black"/> <rect x="29" y="2" width="1" height="20" fill="black"/> <rect x="32" y="2" width="2" height="20" fill="black"/> <rect x="36" y="2" width="1" height="20" fill="black"/> <rect x="39" y="2" width="3" height="20" fill="black"/> <rect x="44" y="2" width="2" height="20" fill="black"/> <rect x="48" y="2" width="1" height="20" fill="black"/> <rect x="51" y="2" width="4" height="20" fill="black"/> <rect x="57" y="2" width="2" height="20" fill="black"/> <rect x="61" y="2" width="1" height="20" fill="black"/> <rect x="64" y="2" width="3" height="20" fill="black"/> <rect x="69" y="2" width="2" height="20" fill="black"/> <rect x="73" y="2" width="1" height="20" fill="black"/> <rect x="76" y="2" width="4" height="20" fill="black"/> <rect x="82" y="2" width="2" height="20" fill="black"/> <rect x="86" y="2" width="1" height="20" fill="black"/> <rect x="89" y="2" width="3" height="20" fill="black"/> <rect x="94" y="2" width="2" height="20" fill="black"/>
+                        <text x="50" y="27" font-family="monospace" font-size="4" text-anchor="middle" fill="black" id="barcode-display-val">LOGISTEL-CODE</text>
                     </svg>
                 </div>
-
                 <div class="w-full text-left space-y-1.5 text-xs bg-gray-50 border border-gray-150 p-3.5 rounded-xl">
                     <p class="text-gray-500">ID Peminjaman: <span id="barcode-modal-id" class="text-gray-800 font-semibold font-mono"></span></p>
                     <p class="text-gray-500">Nama Barang: <span id="barcode-modal-item" class="text-gray-800 font-semibold"></span></p>
                 </div>
-
-                <button onclick="closeBarcodeModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded-xl transition">
-                    Tutup Tampilan
-                </button>
+                <button onclick="closeBarcodeModal()" class="w-full py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 text-xs font-semibold rounded-xl transition">Tutup Tampilan</button>
             </div>
         </div>
     </div>
@@ -517,28 +513,23 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            
             <form id="edit-profile-form" class="p-6 space-y-4">
                 <div id="modal-error-alert" class="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-xs hidden flex items-start gap-2">
                     <svg class="w-4 h-4 text-red-600 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
                     <span id="modal-error-message" class="font-medium">Nomor handphone tidak boleh kosong!</span>
                 </div>
-
                 <div>
-                    <label for="modal-nama" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Lengkap</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Nama Lengkap</label>
                     <input type="text" id="modal-nama" value="<%= nama %>" readonly class="w-full px-4 py-2.5 bg-gray-50 border border-gray-250 rounded-xl text-gray-400 text-sm focus:outline-none cursor-not-allowed font-medium">
                 </div>
-
                 <div>
-                    <label for="modal-nim" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">NIM</label>
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">NIM</label>
                     <input type="text" id="modal-nim" value="<%= nim %>" readonly class="w-full px-4 py-2.5 bg-gray-50 border border-gray-250 rounded-xl text-gray-400 text-sm focus:outline-none cursor-not-allowed font-mono">
                 </div>
-
                 <div>
-                    <label for="modal-hp" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nomor HP</label>
+                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-1.5">Nomor HP</label>
                     <input type="text" id="modal-hp" value="<%= hp %>" required class="w-full px-4 py-2.5 bg-white border border-gray-300 rounded-xl text-gray-900 focus:ring-2 focus:ring-telkom-500/20 focus:border-telkom-700 text-sm transition">
                 </div>
-
                 <div class="pt-2 flex gap-3">
                      <button type="button" onclick="closeEditProfileModal()" class="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold rounded-xl transition border border-gray-200">Batal</button>
                      <button type="submit" class="flex-1 py-2.5 bg-telkom-700 hover:bg-telkom-800 text-white text-xs font-semibold rounded-xl transition">Simpan</button>
@@ -547,20 +538,89 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
-        // Seed dummy data for visual catalog presentation
-        if (!localStorage.getItem("logistel_inventaris")) {
-            const defaultInventaris = [
-                { id: "B001", nama: "Kamera", tipe: "Barang", stok: 10, deskripsi: "Peralatan dokumentasi resolusi tinggi." },
-                { id: "B003", nama: "Mic Wireless", tipe: "Barang", stok: 8, deskripsi: "Paket mikrofon nirkabel beserta receiver suara." },
-                { id: "R001", nama: "DSP 301", tipe: "Ruangan", stok: 1, deskripsi: "Ruang kelas dengan fasilitas proyektor, AC." }
-            ];
-            localStorage.setItem("logistel_inventaris", JSON.stringify(defaultInventaris));
-        }
-
+        // =========================================================================
+        // JAVASCRIPT GLOBAL HUB LOGIC
+        // =========================================================================
         document.addEventListener("DOMContentLoaded", function() {
             handleFormTypeChange();
+
+            // AMBIL NILAI PARAMETER STATUS REDIRECT URL SECARA SINKRON
+            const status = "<%= (request.getParameter("status") != null) ? request.getParameter("status") : "" %>";
+            const toast = document.getElementById("toast-container");
+            const iconBg = document.getElementById("toast-icon-bg");
+            const icon = document.getElementById("toast-icon");
+            const title = document.getElementById("toast-title");
+            const msg = document.getElementById("toast-message");
+
+            // PERUBAHAN: Tambahkan "bentrok" ke dalam validasi parameter status
+            if (status === "berhasil" || status === "gagal" || status === "retur_sukses" || status === "bentrok") {
+                toast.classList.remove("border-green-200", "border-red-200", "border-blue-200", "border-amber-200");
+
+                if (status === "berhasil") {
+                    toast.classList.add("border-green-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-green-50 border border-green-100 text-green-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "✓";
+                    title.innerText = "Pengajuan Berhasil";
+                    msg.innerText = "Berkas Anda masuk ke riwayat transaksi.";
+                } else if (status === "retur_sukses") {
+                    toast.classList.add("border-blue-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "↺";
+                    title.innerText = "Pengembalian Diajukan";
+                    msg.innerText = "Silakan temui petugas gudang untuk serah terima fisik.";
+                } else if (status === "bentrok") {
+                    // TAMBAHAN BARU: Toast Elegan berwarna Amber/Kuning jika jadwal full booked
+                    toast.classList.add("border-amber-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "⚠";
+                    title.innerText = "Jadwal Bentrok!";
+                    msg.innerText = "Item sudah dipesan ormawa lain pada tanggal tersebut.";
+                } else {
+                    toast.classList.add("border-red-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-red-50 border border-red-100 text-telkom-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "✕";
+                    title.innerText = "Pengajuan Gagal";
+                    msg.innerText = "Sistem menolak request, periksa kembali inputan Anda.";
+                }
+
+                toast.classList.remove("hidden");
+                setTimeout(() => { toast.classList.remove("opacity-0", "translate-y-[-20px]"); }, 50);
+
+                // Bersihkan parameter URL address bar demi keamanan penyegaran
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+                // Sembunyikan otomatis setelah 4 detik
+                setTimeout(() => {
+                    toast.classList.add("opacity-0", "translate-y-[-20px]");
+                    setTimeout(() => { toast.classList.add("hidden"); }, 300);
+                }, 4000);
+            }
         });
+
+        // FUNGSI UTAMA UNTUK MENGAJUKAN RETUR/PENGEMBALIAN BARANG KE CONTROLLER
+        function ajukanPengembalian(idPeminjaman) {
+            Swal.fire({
+                title: "Kembalikan Logistik?",
+                text: "Pastikan barang/ruangan yang dipinjam sudah dalam kondisi baik dan siap diserahterimakan.",
+                icon: "info",
+                showCancelButton: true,
+                confirmButtonColor: "#3b82f6",
+                cancelButtonColor: "#6b7280",
+                confirmButtonText: "Ya, Ajukan Pengembalian!",
+                cancelButtonText: "Batal"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '${pageContext.request.contextPath}/pengembalian-barang';
+                    form.innerHTML = '<input type="hidden" name="id_peminjaman" value="' + idPeminjaman + '">';
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            });
+        }
 
         function switchTab(tabId, sectionId) {
             document.querySelectorAll('.tab-content').forEach(section => section.classList.add('hidden'));
@@ -593,7 +653,6 @@
             }
         }
 
-
         function filterCatalog(filterType) {
             document.querySelectorAll('.catalog-filter-btn').forEach(btn => btn.className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg text-gray-500 hover:text-gray-900 transition");
             document.getElementById(filterType === 'Semua' ? 'filter-all' : filterType === 'Barang' ? 'filter-barang' : 'filter-ruangan').className = "catalog-filter-btn px-4 py-1.5 text-xs font-semibold rounded-lg bg-telkom-700 text-white transition";
@@ -611,40 +670,21 @@
             });
         }
 
-        function populateDropdown(type, selectedItemValue = null) {
-            const dropdown = document.getElementById('id_item');
-            dropdown.innerHTML = '';
-            const inventaris = JSON.parse(localStorage.getItem("logistel_inventaris")) || [];
-            inventaris.filter(item => item.tipe === type).forEach(opt => {
-                const element = document.createElement('option');
-                element.value = opt.id; element.text = opt.nama;
-                if (selectedItemValue && opt.nama.toUpperCase().includes(selectedItemValue.toUpperCase())) element.selected = true;
-                dropdown.appendChild(element);
-            });
-        }
-
         function handleFormTypeChange() {
             const type = document.getElementById('tipe_inventaris').value;
             const qtyContainer = document.getElementById('jumlah-container');
             const qtyInput = document.getElementById('jumlah');
             const options = document.getElementById('id_item').options;
 
-            // Reset dropdown item ke default pilihan pertama ("-- Pilih Item --")
             document.getElementById('id_item').selectedIndex = 0;
 
-            // Filter opsi berdasarkan atribut data-type
             for (let i = 0; i < options.length; i++) {
                 const itemType = options[i].getAttribute('data-type');
-                if (!itemType) continue; // Biarkan opsi petunjuk tetap ada
-                
-                if (itemType === type) {
-                    options[i].classList.remove('hidden');
-                } else {
-                    options[i].classList.add('hidden');
-                }
+                if (!itemType) continue;
+                if (itemType === type) options[i].classList.remove('hidden');
+                else options[i].classList.add('hidden');
             }
 
-            // Logika menyembunyikan input jumlah jika yang dipilih adalah Ruangan
             if (type === 'Ruangan') {
                 qtyContainer.classList.add('hidden');
                 qtyInput.value = '1';
@@ -654,40 +694,15 @@
                 qtyInput.required = true;
             }
         }
-        // function handleFormTypeChange() {
-        //     const type = document.getElementById('tipe_inventaris').value; // "Barang" atau "Ruangan"
-        //     const qtyContainer = document.getElementById('jumlah-container');
-        //     const qtyInput = document.getElementById('jumlah');
-        //     const options = document.getElementById('id_item').options;
 
-        //     // Filter dropdown
-        //     for (let i = 0; i < options.length; i++) {
-        //         if (options[i].getAttribute('data-type') === type) {
-        //             options[i].classList.remove('hidden');
-        //         } else {
-        //             options[i].classList.add('hidden');
-        //         }
-        //     }
-            
-        //     // Reset selection saat ganti kategori
-        //     document.getElementById('id_item').selectedIndex = -1;
-
-        //     // Logika tambahan untuk barang/ruangan
-        //     if (type === 'Ruangan') {
-        //         qtyContainer.classList.add('hidden');
-        //         qtyInput.value = '1';
-        //         qtyInput.required = false;
-        //     } else {
-        //         qtyContainer.classList.remove('hidden');
-        //         qtyInput.required = true;
-        //     }
-        // }
-
-        function quickBorrow(type, itemName) {
+        function quickBorrow(type, itemId, itemName) {
             switchTab('form-tab', 'form-section');
             document.getElementById('tipe_inventaris').value = type;
             handleFormTypeChange();
-            populateDropdown(type, itemName);
+            
+            // Gabungkan tipe secara dinamis menjadi BARANG_3 atau RUANGAN_3
+            const gabungIdPrefiks = type.toUpperCase() + "_" + itemId;
+            document.getElementById('id_item').value = gabungIdPrefiks;
         }
 
         function openBarcodeModal(id, item, barcodeText) {
@@ -716,56 +731,6 @@
             modal.classList.add('opacity-0'); modal.querySelector('div').classList.add('scale-95');
             setTimeout(() => { modal.classList.add('hidden'); }, 200);
         }
-
-    </script>
-
-    <%
-        String statusToast = request.getParameter("status");
-    %>
-
-    <script>
-        document.addEventListener("DOMContentLoaded", function() {
-            const status = "<%= (statusToast != null) ? statusToast : "" %>";
-            const toast = document.getElementById("toast-container");
-            const iconBg = document.getElementById("toast-icon-bg");
-            const icon = document.getElementById("toast-icon");
-            const title = document.getElementById("toast-title");
-            const msg = document.getElementById("toast-message");
-
-            if (status === "berhasil" || status === "gagal") {
-                // Konfigurasi dinamis berdasarkan status
-                if (status === "berhasil") {
-                    toast.classList.add("border-green-200");
-                    iconBg.className = "w-8 h-8 rounded-xl bg-green-50 border border-green-100 text-green-600 flex items-center justify-center shrink-0 shadow-sm";
-                    icon.innerHTML = "✓";
-                    title.innerText = "Pengajuan Berhasil";
-                    msg.innerText = "Berkas Anda masuk ke riwayat transaksi.";
-                } else {
-                    toast.classList.add("border-red-200");
-                    iconBg.className = "w-8 h-8 rounded-xl bg-red-50 border border-red-100 text-telkom-600 flex items-center justify-center shrink-0 shadow-sm";
-                    icon.innerHTML = "✕";
-                    title.innerText = "Pengajuan Gagal";
-                    msg.innerText = "Sistem menolak request, periksa kembali inputan Anda.";
-                }
-
-                // Tampilkan dengan animasi fade-in & slide-down
-                toast.classList.remove("hidden");
-                setTimeout(() => {
-                    toast.classList.remove("opacity-0", "translate-y-[-20px]");
-                }, 50);
-
-                // Bersihkan parameter URL
-                window.history.replaceState({}, document.title, window.location.pathname);
-
-                // Sembunyikan otomatis setelah 4 detik
-                setTimeout(() => {
-                    toast.classList.add("opacity-0", "translate-y-[-20px]");
-                    setTimeout(() => {
-                        toast.classList.add("hidden");
-                    }, 300);
-                }, 4000);
-            }
-        });
     </script>
 </body>
 </html>

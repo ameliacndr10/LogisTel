@@ -161,5 +161,39 @@
             }
         }
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <%
+        // Menangkap parameter status dari URL pengalihan LogoutServlet
+        String statusParam = request.getParameter("status");
+    %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const status = "<%= (statusParam != null) ? statusParam : "" %>";
+
+            if (status === "logout") {
+                Swal.fire({
+                    title: "Berhasil Keluar!",
+                    text: "Sesi Anda telah diakhiri dengan aman.",
+                    icon: "success",
+                    confirmButtonColor: "#dc2626", // Warna merah identitas Telkom
+                    confirmButtonText: "OK"
+                }).then(() => {
+                    // Bersihkan parameter URL agar pop-up tidak muncul lagi saat di-refresh
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            } else if (status === "timeout") {
+                Swal.fire({
+                    title: "Sesi Berakhir!",
+                    text: "Silakan login kembali untuk melanjutkan pengajuan.",
+                    icon: "warning",
+                    confirmButtonColor: "#dc2626",
+                    confirmButtonText: "Login Kembali"
+                }).then(() => {
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                });
+            }
+        });
+    </script>
 </body>
 </html>
