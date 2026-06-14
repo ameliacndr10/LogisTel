@@ -1,10 +1,10 @@
-"""# 📦 LogisTel - Sistem Manajemen Peminjaman Logistik & Ruangan
+📦 LogisTel - Sistem Manajemen Peminjaman Logistik & Ruangan
 
 LogisTel adalah aplikasi berbasis web yang dirancang khusus untuk mengelola alur pengajuan, verifikasi, serta pelacakan peminjaman logistik (barang) dan fasilitas (ruangan) di lingkungan kampus Telkom University. Sistem ini mengintegrasikan otentikasi akun, pengecekan ketersediaan jadwal secara real-time, manajemen stok gudang otomatis, dan sistem serah terima berbasis kode barcode unik.
 
 ---
 
-## ✨ Fitur Utama
+##✨ Fitur Utama
 
 ### 👤 Portal Mahasiswa (User)
 * **Katalog Inventaris Dinamis:** Melihat daftar barang (beserta sisa stok) dan ruangan yang tersedia secara real-time dengan fitur filter kategori dan pencarian cepat.
