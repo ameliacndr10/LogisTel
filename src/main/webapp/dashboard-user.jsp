@@ -70,7 +70,15 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col md:flex-row relative">
-
+    <div id="toast-container" class="fixed top-5 right-5 z-50 hidden max-w-sm w-full bg-white border rounded-2xl p-4 shadow-xl flex items-start gap-3 transform translate-y-[-20px] opacity-0 transition-all duration-300">
+        <div id="toast-icon-bg" class="w-8 h-8 rounded-xl flex items-center justify-center shrink-0 shadow-sm">
+            <span id="toast-icon" class="text-lg font-bold"></span>
+        </div>
+        <div class="flex-1">
+            <h4 id="toast-title" class="text-sm font-bold text-gray-900"></h4>
+            <p id="toast-message" class="text-xs text-gray-500 mt-0.5"></p>
+        </div>
+    </div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-telkom-800 text-white flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg">
         <div class="flex flex-col h-full">
             <div class="h-16 px-6 border-b border-telkom-900 flex items-center gap-3 shrink-0">
@@ -233,7 +241,10 @@
                             }
                             rsB.close(); rsR.close(); stmt.close();
                         } catch (Exception e) {
-                            out.println("Error memuat data: " + e.getMessage());
+                            // Kirim pesan error spesifik ke URL
+                            String errorMessage = e.getMessage();
+                            // Kita gunakan URLEncoder agar pesan error bisa dikirim lewat URL dengan aman
+                            response.sendRedirect("dashboard-user.jsp?status=gagal&msg=" + java.net.URLEncoder.encode(errorMessage, "UTF-8"));
                         } finally {
                             if(conn != null) conn.close();
                         }
@@ -264,14 +275,39 @@
                                 <label for="tipe_inventaris" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Jenis Inventaris</label>
                                 <select name="tipe_inventaris" id="tipe_inventaris" required onchange="handleFormTypeChange()"
                                     class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-800 text-sm focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 appearance-none cursor-pointer">
+                                    <option value="" disabled selected>-- Pilih Jenis --</option>
                                     <option value="Barang">Barang (Logistik)</option>
                                     <option value="Ruangan">Ruangan (Fasilitas)</option>
                                 </select>
                             </div>
                             <div>
                                 <label for="id_item" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Pilih Item</label>
-                                <select name="id_item" id="id_item" required
-                                    class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-gray-850 text-sm focus:outline-none focus:ring-1 focus:ring-telkom-500 focus:border-telkom-700 cursor-pointer">
+                                <select name="id_item" id="id_item" required class="w-full px-4 py-3 bg-white border border-gray-300 rounded-xl text-sm focus:outline-none">
+                                    <option value="" disabled selected>-- Pilih Item --</option>
+                                    <%
+                                        // Membuka koneksi baru khusus form agar tidak bentrok dengan bagian katalog atas
+                                        Connection connForm = null;
+                                        Statement stmtForm = null;
+                                        ResultSet rsItems = null;
+                                        try {
+                                            connForm = DatabaseConfig.getConnection();
+                                            stmtForm = connForm.createStatement();
+                                            rsItems = stmtForm.executeQuery("SELECT id_barang as id, nama_barang as nama, 'Barang' as tipe FROM barang UNION SELECT id_ruangan as id, nama_ruangan as nama, 'Ruangan' as tipe FROM ruangan");
+                                            while(rsItems.next()) {
+                                    %>
+                                                <option value="<%= rsItems.getString("id") %>" data-type="<%= rsItems.getString("tipe") %>" class="item-option hidden">
+                                                    <%= rsItems.getString("nama") %>
+                                                </option>
+                                    <%
+                                            }
+                                        } catch (Exception e) {
+                                            out.println("<option disabled>Gagal memuat data: " + e.getMessage() + "</option>");
+                                        } finally {
+                                            if(rsItems != null) rsItems.close();
+                                            if(stmtForm != null) stmtForm.close();
+                                            if(connForm != null) connForm.close();
+                                        }
+                                    %>
                                 </select>
                             </div>
                         </div>
@@ -333,8 +369,84 @@
                                     <th class="px-6 py-4 text-center">Barcode</th>
                                 </tr>
                             </thead>
-                             <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
-                                </tbody>
+                            <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
+                                <%
+                                    // Ambil id_pengguna secara dinamis dari session mahasiswa yang sedang login
+                                    Integer idPenggunaSession = (session != null) ? (Integer) session.getAttribute("id_pengguna") : null;
+                                    
+                                    if (idPenggunaSession != null) {
+                                        Connection connRiwayat = null;
+                                        PreparedStatement psRiwayat = null;
+                                        ResultSet rsRiwayat = null;
+                                        try {
+                                            connRiwayat = DatabaseConfig.getConnection();
+                                            
+                                            // Query mengambil data peminjaman beserta nama barang/ruangan yang disinkronkan dari tabel detail
+                                            String sqlRiwayat = "SELECT p.id_peminjaman, p.tanggal_mulai, p.status, p.barcode, p.nama_kegiatan, " +
+                                                                "COALESCE(b.nama_barang, r.nama_ruangan) AS nama_item " +
+                                                                "FROM peminjaman p " +
+                                                                "LEFT JOIN detail_peminjaman_barang db ON p.id_peminjaman = db.id_peminjaman " +
+                                                                "LEFT JOIN barang b ON db.id_barang = b.id_barang " +
+                                                                "LEFT JOIN detail_peminjaman_ruangan dr ON p.id_peminjaman = dr.id_peminjaman " +
+                                                                "LEFT JOIN ruangan r ON dr.id_ruangan = r.id_ruangan " +
+                                                                "WHERE p.id_user = ? " +
+                                                                "ORDER BY p.id_peminjaman DESC";
+                                            
+                                            psRiwayat = connRiwayat.prepareStatement(sqlRiwayat);
+                                            psRiwayat.setInt(1, idPenggunaSession);
+                                            rsRiwayat = psRiwayat.executeQuery();
+                                            
+                                            boolean adaData = false;
+                                            while (rsRiwayat.next()) {
+                                                adaData = true;
+                                                int idTrans = rsRiwayat.getInt("id_peminjaman");
+                                                String namaKeg = rsRiwayat.getString("nama_kegiatan");
+                                                String namaItem = rsRiwayat.getString("nama_item");
+                                                String tglMulai = rsRiwayat.getString("tanggal_mulai");
+                                                String status = rsRiwayat.getString("status");
+                                                String barcode = rsRiwayat.getString("barcode");
+                                                
+                                                if(namaItem == null) namaItem = "Fasilitas Ruangan";
+                                %>
+                                                <tr class="border-b border-gray-150">
+                                                    <td class="px-6 py-4 font-mono text-telkom-700">#<%= idTrans %></td>
+                                                    <td class="px-6 py-4 font-semibold text-gray-900"><%= namaKeg %></td>
+                                                    <td class="px-6 py-4 text-gray-600"><%= namaItem %></td>
+                                                    <td class="px-6 py-4 text-gray-500 font-mono text-xs"><%= tglMulai %></td>
+                                                    <td class="px-6 py-4">
+                                                        <% if ("PENDING".equalsIgnoreCase(status)) { %>
+                                                            <span class="inline-flex items-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">PENDING</span>
+                                                        <% } else if ("DISETUJUI".equalsIgnoreCase(status)) { %>
+                                                            <span class="inline-flex items-center gap-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">APPROVED</span>
+                                                        <% } else { %>
+                                                            <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">REJECTED</span>
+                                                        <% } %>
+                                                    </td>
+                                                    <td class="px-6 py-4 text-center text-gray-500 font-mono text-xs">
+                                                        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')" class="text-telkom-600 hover:text-telkom-800 font-bold underline">
+                                                            Lihat Barcode
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                <%
+                                            }
+                                            
+                                            if (!adaData) {
+                                                out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-gray-500 font-medium bg-white'>Belum ada riwayat pengajuan peminjaman di database.</td></tr>");
+                                            }
+                                            
+                                        } catch (Exception e) {
+                                            out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-red-500 bg-white'>Gagal memuat database: " + e.getMessage() + "</td></tr>");
+                                        } finally {
+                                            if (rsRiwayat != null) try { rsRiwayat.close(); } catch(Exception e) {}
+                                            if (psRiwayat != null) try { psRiwayat.close(); } catch(Exception e) {}
+                                            if (connRiwayat != null) try { connRiwayat.close(); } catch(Exception e) {}
+                                        }
+                                    } else {
+                                        out.println("<tr><td colspan='6' class='px-6 py-8 text-center text-gray-500 bg-white'>Sesi berakhir, silakan login kembali.</td></tr>");
+                                    }
+                                %>
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -447,7 +559,6 @@
         }
 
         document.addEventListener("DOMContentLoaded", function() {
-            renderRiwayatTable();
             handleFormTypeChange();
         });
 
@@ -516,7 +627,24 @@
             const type = document.getElementById('tipe_inventaris').value;
             const qtyContainer = document.getElementById('jumlah-container');
             const qtyInput = document.getElementById('jumlah');
-            populateDropdown(type);
+            const options = document.getElementById('id_item').options;
+
+            // Reset dropdown item ke default pilihan pertama ("-- Pilih Item --")
+            document.getElementById('id_item').selectedIndex = 0;
+
+            // Filter opsi berdasarkan atribut data-type
+            for (let i = 0; i < options.length; i++) {
+                const itemType = options[i].getAttribute('data-type');
+                if (!itemType) continue; // Biarkan opsi petunjuk tetap ada
+                
+                if (itemType === type) {
+                    options[i].classList.remove('hidden');
+                } else {
+                    options[i].classList.add('hidden');
+                }
+            }
+
+            // Logika menyembunyikan input jumlah jika yang dipilih adalah Ruangan
             if (type === 'Ruangan') {
                 qtyContainer.classList.add('hidden');
                 qtyInput.value = '1';
@@ -526,6 +654,34 @@
                 qtyInput.required = true;
             }
         }
+        // function handleFormTypeChange() {
+        //     const type = document.getElementById('tipe_inventaris').value; // "Barang" atau "Ruangan"
+        //     const qtyContainer = document.getElementById('jumlah-container');
+        //     const qtyInput = document.getElementById('jumlah');
+        //     const options = document.getElementById('id_item').options;
+
+        //     // Filter dropdown
+        //     for (let i = 0; i < options.length; i++) {
+        //         if (options[i].getAttribute('data-type') === type) {
+        //             options[i].classList.remove('hidden');
+        //         } else {
+        //             options[i].classList.add('hidden');
+        //         }
+        //     }
+            
+        //     // Reset selection saat ganti kategori
+        //     document.getElementById('id_item').selectedIndex = -1;
+
+        //     // Logika tambahan untuk barang/ruangan
+        //     if (type === 'Ruangan') {
+        //         qtyContainer.classList.add('hidden');
+        //         qtyInput.value = '1';
+        //         qtyInput.required = false;
+        //     } else {
+        //         qtyContainer.classList.remove('hidden');
+        //         qtyInput.required = true;
+        //     }
+        // }
 
         function quickBorrow(type, itemName) {
             switchTab('form-tab', 'form-section');
@@ -561,26 +717,55 @@
             setTimeout(() => { modal.classList.add('hidden'); }, 200);
         }
 
-        // Dummy render history if exists in localStorage (Nanti diganti JSTL by Backend)
-        function renderRiwayatTable() {
-            const tbody = document.querySelector("#riwayat-section tbody");
-            if (!tbody) return;
-            const peminjamans = JSON.parse(localStorage.getItem("logistel_peminjaman")) || [];
-            const userPeminjamans = peminjamans.filter(p => p.nim === "<%= nim %>");
-            
-            if (userPeminjamans.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-500 font-medium bg-white">Belum ada riwayat pengajuan peminjaman.</td></tr>`;
-                return;
+    </script>
+
+    <%
+        String statusToast = request.getParameter("status");
+    %>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const status = "<%= (statusToast != null) ? statusToast : "" %>";
+            const toast = document.getElementById("toast-container");
+            const iconBg = document.getElementById("toast-icon-bg");
+            const icon = document.getElementById("toast-icon");
+            const title = document.getElementById("toast-title");
+            const msg = document.getElementById("toast-message");
+
+            if (status === "berhasil" || status === "gagal") {
+                // Konfigurasi dinamis berdasarkan status
+                if (status === "berhasil") {
+                    toast.classList.add("border-green-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-green-50 border border-green-100 text-green-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "✓";
+                    title.innerText = "Pengajuan Berhasil";
+                    msg.innerText = "Berkas Anda masuk ke riwayat transaksi.";
+                } else {
+                    toast.classList.add("border-red-200");
+                    iconBg.className = "w-8 h-8 rounded-xl bg-red-50 border border-red-100 text-telkom-600 flex items-center justify-center shrink-0 shadow-sm";
+                    icon.innerHTML = "✕";
+                    title.innerText = "Pengajuan Gagal";
+                    msg.innerText = "Sistem menolak request, periksa kembali inputan Anda.";
+                }
+
+                // Tampilkan dengan animasi fade-in & slide-down
+                toast.classList.remove("hidden");
+                setTimeout(() => {
+                    toast.classList.remove("opacity-0", "translate-y-[-20px]");
+                }, 50);
+
+                // Bersihkan parameter URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+
+                // Sembunyikan otomatis setelah 4 detik
+                setTimeout(() => {
+                    toast.classList.add("opacity-0", "translate-y-[-20px]");
+                    setTimeout(() => {
+                        toast.classList.add("hidden");
+                    }, 300);
+                }, 4000);
             }
-            
-            tbody.innerHTML = "";
-            userPeminjamans.forEach(p => {
-                const tr = document.createElement("tr");
-                tr.className = "border-b border-gray-150";
-                tr.innerHTML = `<td class="px-6 py-4 font-mono text-telkom-700">#${p.id}</td><td class="px-6 py-4 font-semibold text-gray-900">${p.namaKegiatan}</td><td class="px-6 py-4 text-gray-600">${p.itemNama}</td><td class="px-6 py-4 text-gray-500 font-mono text-xs">${p.tanggalMulai}</td><td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 text-xs text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full">PENDING</span></td><td class="px-6 py-4 text-center text-gray-400 font-mono text-xs">-</td>`;
-                tbody.appendChild(tr);
-            });
-        }
+        });
     </script>
 </body>
 </html>

@@ -4,6 +4,7 @@ com\logistel\model\IManajemenStok.class
 com\logistel\model\LogistikAset.class
 com\logistel\controller\RegisterServlet.class
 com\logistel\model\DetailPeminjamanRuangan.class
+com\logistel\controller\PengajuanPeminjamanServlet.class
 com\logistel\controller\LoginServlet.class
 com\logistel\model\Ruangan.class
 com\logistel\config\DatabaseConfig.class
