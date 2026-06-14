@@ -4,7 +4,7 @@ LogisTel adalah aplikasi berbasis web yang dirancang khusus untuk mengelola alur
 
 ---
 
-##✨ Fitur Utama
+## ✨ Fitur Utama
 
 ### 👤 Portal Mahasiswa (User)
 * **Katalog Inventaris Dinamis:** Melihat daftar barang (beserta sisa stok) dan ruangan yang tersedia secara real-time dengan fitur filter kategori dan pencarian cepat.
