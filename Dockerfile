@@ -4,8 +4,8 @@ FROM tomcat:9.0-jdk11-openjdk-slim
 # Langkah 2: Bersihkan server bawaan
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Langkah 3: Masukkan aplikasi LogisTel ke server
-COPY target/LogisTel.war /usr/local/tomcat/webapps/ROOT.war
+# Langkah 3: Masukkan aplikasi LogisTel ke server (Menggunakan ROOT.war)
+COPY LogisTel.war /usr/local/tomcat/webapps/ROOT.war
 
 # Langkah 4: Buka gerbang port internal
 EXPOSE 8080
