@@ -254,20 +254,20 @@
                                 <%
                                     if(conn != null) {
                                         try {
-                                            // PERUBAHAN 2: Query dimodifikasi dengan menyertakan p.tanggal_mulai dan p.tanggal_selesai
+                                            // PERUBAHAN: Menghapus p.nama_kegiatan karena kolom sudah tidak ada di tabel peminjaman
                                             String sqlVerif = "SELECT p.id_peminjaman, u.nama_ormawa, p.status, p.tanggal_mulai, p.tanggal_selesai, " +
-                                                            "COALESCE(p.nama_kegiatan, dpb.nama_kegiatan, dpr.nama_kegiatan, '-') AS nama_kegiatan, " +
-                                                            "COALESCE(b.nama_barang, r.nama_ruangan, 'Fasilitas Ruangan') AS nama_inventaris, " +
-                                                            "COALESCE(dpb.jumlah, 1) AS jumlah_pinjam " +
-                                                            "FROM peminjaman p " +
-                                                            "LEFT JOIN user u ON p.id_user = u.id_user " +
-                                                            "LEFT JOIN detail_peminjaman_barang dpb ON p.id_peminjaman = dpb.id_peminjaman " +
-                                                            "LEFT JOIN barang b ON dpb.id_barang = b.id_barang " +
-                                                            "LEFT JOIN detail_peminjaman_ruangan dpr ON p.id_peminjaman = dpr.id_peminjaman " +
-                                                            "LEFT JOIN ruangan r ON dpr.id_ruangan = r.id_ruangan " +
-                                                            "WHERE p.status IN ('PENDING', 'RETURN_REQUESTED') " +
-                                                            "ORDER BY p.id_peminjaman DESC";
-                                                            
+                                                              "COALESCE(dpb.nama_kegiatan, dpr.nama_kegiatan, '-') AS nama_kegiatan, " +
+                                                              "COALESCE(b.nama_barang, r.nama_ruangan, 'Fasilitas Ruangan') AS nama_inventaris, " +
+                                                              "COALESCE(dpb.jumlah, 1) AS jumlah_pinjam " +
+                                                              "FROM peminjaman p " +
+                                                              "LEFT JOIN user u ON p.id_user = u.id_user " +
+                                                              "LEFT JOIN detail_peminjaman_barang dpb ON p.id_peminjaman = dpb.id_peminjaman " +
+                                                              "LEFT JOIN barang b ON dpb.id_barang = b.id_barang " +
+                                                              "LEFT JOIN detail_peminjaman_ruangan dpr ON p.id_peminjaman = dpr.id_peminjaman " +
+                                                              "LEFT JOIN ruangan r ON dpr.id_ruangan = r.id_ruangan " +
+                                                              "WHERE p.status IN ('PENDING', 'RETURN_REQUESTED') " +
+                                                              "ORDER BY p.id_peminjaman DESC";
+                                                              
                                             ResultSet rsVerif = stmt.executeQuery(sqlVerif);
                                             boolean hasPending = false;
                                             while(rsVerif.next()) {
@@ -279,7 +279,6 @@
                                                 String statusSkg = rsVerif.getString("status");
                                                 int jumlahPinjam = rsVerif.getInt("jumlah_pinjam");
                                                 
-                                                // PERUBAHAN 3: Ambil nilai String tanggal dari query induk database
                                                 String tglMulai = rsVerif.getString("tanggal_mulai");
                                                 String tglSelesai = rsVerif.getString("tanggal_selesai");
                                                 
