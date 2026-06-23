@@ -361,7 +361,7 @@
                 </div>
             </section>
 
-<section id="riwayat-section" class="tab-content hidden space-y-6">
+            <section id="riwayat-section" class="tab-content hidden space-y-6">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Riwayat Peminjaman</h3>
                     <p class="text-xs text-gray-500">Daftar transaksi dan berkas yang diajukan oleh akun login Anda</p>
@@ -392,8 +392,9 @@
                                         try {
                                             connRiwayat = DatabaseConfig.getConnection();
                                             
-                                            // Ambil p.tanggal_selesai juga dari database
-                                            String sqlRiwayat = "SELECT p.id_peminjaman, p.tanggal_mulai, p.tanggal_selesai, p.status, p.barcode, p.nama_kegiatan, " +
+                                            // QUERY YANG SUDAH DIPERBAIKI (Menggunakan COALESCE untuk nama_kegiatan)
+                                            String sqlRiwayat = "SELECT p.id_peminjaman, p.tanggal_mulai, p.tanggal_selesai, p.status, p.barcode, " +
+                                                                "COALESCE(db.nama_kegiatan, dr.nama_kegiatan) AS nama_kegiatan, " +
                                                                 "COALESCE(b.nama_barang, r.nama_ruangan) AS nama_item " +
                                                                 "FROM peminjaman p " +
                                                                 "LEFT JOIN detail_peminjaman_barang db ON p.id_peminjaman = db.id_peminjaman " +
@@ -422,7 +423,7 @@
                                 %>
                                                 <tr class="border-b border-gray-150 hover:bg-gray-50/50 transition">
                                                     <td class="px-6 py-4 font-mono text-telkom-700">#<%= idTrans %></td>
-                                                    <td class="px-6 py-4 font-semibold text-gray-900"><%= namaKeg %></td>
+                                                    <td class="px-6 py-4 font-semibold text-gray-900"><%= (namaKeg != null) ? namaKeg : "-" %></td>
                                                     <td class="px-6 py-4 text-gray-600"><%= namaItem %></td>
                                                     <td class="px-6 py-4 text-gray-500 font-mono text-xs">
                                                         <div class="flex flex-col gap-0.5">
