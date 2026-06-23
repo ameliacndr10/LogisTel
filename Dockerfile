@@ -1,14 +1,14 @@
-# Langkah 1: Tentukan fondasi server
-FROM tomcat:9.0-jdk11-openjdk-slim
+# Langkah 1: Tentukan fondasi server (Gunakan JDK 17 atau 21 sesuai laptop Anda)
+FROM tomcat:9.0-jdk17-openjdk-slim
 
 # Langkah 2: Bersihkan server bawaan
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Langkah 3: Masukkan aplikasi LogisTel ke server (Menggunakan ROOT.war)
+# Langkah 3: Masukkan aplikasi LogisTel ke server
 COPY LogisTel.war /usr/local/tomcat/webapps/ROOT.war
 
 # Langkah 4: Buka gerbang port internal
 EXPOSE 8080
 
-# Langkah 5: Jalankan perintah adaptasi port dan nyalakan server
-CMD ["sh", "-c", "sed -i 's/port=\"8080\"/port=\"'\"$PORT\"'/g' /usr/local/tomcat/conf/server.xml && catalina.sh run"]
+# Langkah 5: Jalankan adaptasi port dengan tanda kutip yang aman, lalu nyalakan Tomcat
+CMD sed -i "s/port=\"8080\"/port=\"$PORT\"/g" /usr/local/tomcat/conf/server.xml && catalina.sh run
