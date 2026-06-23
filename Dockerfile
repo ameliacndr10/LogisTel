@@ -5,7 +5,10 @@ FROM tomcat:9.0-jdk17-temurin
 RUN rm -rf /usr/local/tomcat/webapps/*
 
 # Langkah 3: Masukkan aplikasi LogisTel ke server
-COPY LogisTel.war /usr/local/tomcat/webapps/ROOT.war
+# COPY LogisTel.war /usr/local/tomcat/webapps/ROOT.war
+
+# Langkah 3: Masukkan aplikasi LogisTel dan paksa menjadi aplikasi utama (ROOT)
+COPY target/PBO-Fix-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/ROOT.war
 
 # Langkah 4: Buka gerbang port internal
 EXPOSE 8080
