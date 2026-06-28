@@ -69,6 +69,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col md:flex-row relative">
 
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-telkom-800 text-white flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg">
         <div class="flex flex-col h-full">
             <div class="h-16 px-6 border-b border-telkom-900 flex items-center gap-3 shrink-0">
@@ -471,14 +472,18 @@
 
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
         }
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             if (sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
             } else {
                 sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
             }
         }
         
