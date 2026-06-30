@@ -451,15 +451,22 @@
                                                             <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">REJECTED</span>
                                                         <% } %>
                                                     </td>
-                                                    <td class="px-6 py-4 text-center">
-                                                        <% if (!"PENDING".equalsIgnoreCase(status) && !"REJECTED".equalsIgnoreCase(status)) { %>
-                                                        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')" class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">
-                                                            Lihat Barcode
-                                                        </button>
-                                                        <% } else { %>
-                                                        <span class="text-[11px] text-gray-400 italic">Menunggu approval</span>
-                                                        <% } %>
-                                                    </td>
+                                                   <td class="px-6 py-4 text-center">
+    <% if ("APPROVED".equalsIgnoreCase(status)) { %>
+
+        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')"
+            class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">
+            Lihat Barcode
+        </button>
+
+    <% } else { %>
+
+        <span class="text-[11px] text-gray-400 italic">
+            Menunggu approval
+        </span>
+
+    <% } %>
+</td>
                                                 </tr>
                                 <%
                                             }
