@@ -79,6 +79,7 @@
             <p id="toast-message" class="text-xs text-gray-500 mt-0.5"></p>
         </div>
     </div>
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-telkom-800 text-white flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg">
         <div class="flex flex-col h-full">
             <div class="h-16 px-6 border-b border-telkom-900 flex items-center gap-3 shrink-0">
@@ -450,11 +451,22 @@
                                                             <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">REJECTED</span>
                                                         <% } %>
                                                     </td>
-                                                    <td class="px-6 py-4 text-center">
-                                                        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')" class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">
-                                                            Lihat Barcode
-                                                        </button>
-                                                    </td>
+                                                   <td class="px-6 py-4 text-center">
+    <% if ("APPROVED".equalsIgnoreCase(status)) { %>
+
+        <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')"
+            class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">
+            Lihat Barcode
+        </button>
+
+    <% } else { %>
+
+        <span class="text-[11px] text-gray-400 italic">
+            Menunggu approval
+        </span>
+
+    <% } %>
+</td>
                                                 </tr>
                                 <%
                                             }
@@ -643,14 +655,18 @@
 
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
         }
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             if (sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
             } else {
                 sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
             }
         }
 

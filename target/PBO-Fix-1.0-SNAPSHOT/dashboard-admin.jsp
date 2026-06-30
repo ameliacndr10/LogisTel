@@ -69,6 +69,7 @@
 </head>
 <body class="bg-gray-50 text-gray-900 min-h-screen flex flex-col md:flex-row relative">
 
+    <div id="sidebar-overlay" onclick="toggleMobileSidebar()" class="fixed inset-0 bg-black/50 z-20 hidden md:hidden"></div>
     <aside id="sidebar" class="fixed inset-y-0 left-0 z-30 w-64 bg-telkom-800 text-white flex flex-col justify-between transform -translate-x-full md:translate-x-0 transition-transform duration-300 ease-in-out shadow-lg">
         <div class="flex flex-col h-full">
             <div class="h-16 px-6 border-b border-telkom-900 flex items-center gap-3 shrink-0">
@@ -91,6 +92,12 @@
                     <% if(totalPending > 0) { %>
                         <span class="ml-auto bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"><%= totalPending %></span>
                     <% } %>
+                </button>
+
+                <button onclick="switchTab('riwayat-tab', 'riwayat-section')" id="riwayat-tab" 
+                    class="nav-link w-full flex items-center gap-3 px-4 py-3 text-red-200 rounded-xl hover:bg-telkom-700 hover:text-white transition duration-150 group">
+                    <svg class="w-5 h-5 text-red-200 group-hover:text-white transition" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Riwayat Transaksi</span>
                 </button>
 
                 <button onclick="switchTab('pengguna-tab', 'pengguna-section')" id="pengguna-tab" 
@@ -348,6 +355,118 @@
                 </div>
             </section>
 
+            <section id="riwayat-section" class="tab-content hidden space-y-6">
+                <div>
+                    <h3 class="text-base font-bold text-gray-900">Riwayat Transaksi</h3>
+                    <p class="text-xs text-gray-500">Seluruh riwayat peminjaman yang sudah diproses (disetujui, retur, dikembalikan, ditolak) dari semua pengguna</p>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs font-bold uppercase tracking-wider">
+                                    <th class="px-6 py-4">ID Transaksi</th>
+                                    <th class="px-6 py-4">Nama Ormawa</th>
+                                    <th class="px-6 py-4">Kegiatan</th>
+                                    <th class="px-6 py-4">Detail Inventaris</th>
+                                    <th class="px-6 py-4">Waktu Pinjam</th>
+                                    <th class="px-6 py-4">Status</th>
+                                    <th class="px-6 py-4 text-center">Barcode</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200 text-sm text-gray-700">
+                                <%
+                                    if(conn != null) {
+                                        try {
+                                            String sqlHistori = "SELECT p.id_peminjaman, u.nama_ormawa, p.status, p.tanggal_mulai, p.tanggal_selesai, p.barcode, " +
+                                                              "COALESCE(dpb.nama_kegiatan, dpr.nama_kegiatan, '-') AS nama_kegiatan, " +
+                                                              "COALESCE(b.nama_barang, r.nama_ruangan, 'Fasilitas Ruangan') AS nama_inventaris, " +
+                                                              "COALESCE(dpb.jumlah, 1) AS jumlah_pinjam " +
+                                                              "FROM peminjaman p " +
+                                                              "LEFT JOIN user u ON p.id_user = u.id_user " +
+                                                              "LEFT JOIN detail_peminjaman_barang dpb ON p.id_peminjaman = dpb.id_peminjaman " +
+                                                              "LEFT JOIN barang b ON dpb.id_barang = b.id_barang " +
+                                                              "LEFT JOIN detail_peminjaman_ruangan dpr ON p.id_peminjaman = dpr.id_peminjaman " +
+                                                              "LEFT JOIN ruangan r ON dpr.id_ruangan = r.id_ruangan " +
+                                                              "WHERE p.status IN ('APPROVED', 'RETURN_REQUESTED', 'RETURNED', 'REJECTED') " +
+                                                              "ORDER BY p.id_peminjaman DESC";
+
+                                            ResultSet rsHistori = stmt.executeQuery(sqlHistori);
+                                            boolean hasHistori = false;
+                                            while(rsHistori.next()) {
+                                                hasHistori = true;
+                                                String idPemH = rsHistori.getString("id_peminjaman");
+                                                String ormawaNameH = rsHistori.getString("nama_ormawa");
+                                                String namaKegiatanH = rsHistori.getString("nama_kegiatan");
+                                                String namaInventarisH = rsHistori.getString("nama_inventaris");
+                                                String statusH = rsHistori.getString("status");
+                                                String barcodeH = rsHistori.getString("barcode");
+                                                int jumlahPinjamH = rsHistori.getInt("jumlah_pinjam");
+                                                String tglMulaiH = rsHistori.getString("tanggal_mulai");
+                                                String tglSelesaiH = rsHistori.getString("tanggal_selesai");
+
+                                                if(ormawaNameH == null || ormawaNameH.trim().isEmpty()) {
+                                                    ormawaNameH = "Mahasiswa Umum";
+                                                }
+                                %>
+                                    <tr class="hover:bg-gray-50/50 transition">
+                                        <td class="px-6 py-4 font-mono font-semibold text-telkom-700">#<%= idPemH %></td>
+                                        <td class="px-6 py-4 font-bold"><%= ormawaNameH %></td>
+                                        <td class="px-6 py-4 text-gray-900"><%= namaKegiatanH %></td>
+                                        <td class="px-6 py-4 text-gray-600">
+                                            <%= namaInventarisH %>
+                                            <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                x<%= jumlahPinjamH %>
+                                            </span>
+                                        </td>
+                                        <td class="px-6 py-4 font-mono text-xs">
+                                            <div class="flex flex-col gap-0.5">
+                                                <span class="text-gray-700 font-medium">Mulai: <%= tglMulaiH %></span>
+                                                <span class="text-gray-400 text-[11px]">Selesai: <%= tglSelesaiH %></span>
+                                            </div>
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            <% if ("APPROVED".equalsIgnoreCase(statusH)) { %>
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-green-700 font-semibold bg-green-50 border border-green-200 px-2.5 py-0.5 rounded-full">APPROVED</span>
+                                            <% } else if ("RETURN_REQUESTED".equalsIgnoreCase(statusH)) { %>
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-indigo-700 font-semibold bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide text-[10px]">Menunggu Retur</span>
+                                            <% } else if ("RETURNED".equalsIgnoreCase(statusH)) { %>
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-gray-700 font-semibold bg-gray-100 border border-gray-200 px-2.5 py-0.5 rounded-full uppercase tracking-wide text-[10px]">Selesai/Dikembalikan</span>
+                                            <% } else { %>
+                                                <span class="inline-flex items-center gap-1.5 text-xs text-red-700 font-semibold bg-red-50 border border-red-200 px-2.5 py-0.5 rounded-full">REJECTED</span>
+                                            <% } %>
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <% if (!"REJECTED".equalsIgnoreCase(statusH)) { %>
+                                                <span class="text-xs font-mono font-semibold text-telkom-700 bg-red-50 border border-red-200 px-3 py-1.5 rounded-xl"><%= barcodeH %></span>
+                                            <% } else { %>
+                                                <span class="text-[11px] text-gray-400 italic">-</span>
+                                            <% } %>
+                                        </td>
+                                    </tr>
+                                <%
+                                            }
+                                            if(!hasHistori) {
+                                %>
+                                        <tr><td colspan="7" class="px-6 py-8 text-center text-gray-500 font-medium bg-white">Belum ada riwayat transaksi yang selesai diproses.</td></tr>
+                                <%
+                                            }
+                                            rsHistori.close();
+                                        } catch(Exception e) {
+                                %>
+                                        <tr><td colspan="7" class="px-6 py-8 text-center text-red-500 bg-white">Gagal memuat riwayat: <%= e.getMessage() %></td></tr>
+                                <%
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                %>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
             <section id="pengguna-section" class="tab-content hidden space-y-6">
                 <div>
                     <h3 class="text-base font-bold text-gray-900">Manajemen Data Pengguna</h3>
@@ -466,19 +585,24 @@
 
             let title = "Katalog Inventaris";
             if (sectionId === 'verifikasi-section') title = "Verifikasi Peminjaman";
+            if (sectionId === 'riwayat-section') title = "Riwayat Transaksi Keseluruhan";
             if (sectionId === 'pengguna-section') title = "Data Pengguna Terdaftar";
             document.getElementById('section-title').innerText = title;
 
             const sidebar = document.getElementById('sidebar');
             sidebar.classList.add('-translate-x-full');
+            document.getElementById('sidebar-overlay').classList.add('hidden');
         }
 
         function toggleMobileSidebar() {
             const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
             if (sidebar.classList.contains('-translate-x-full')) {
                 sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
             } else {
                 sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
             }
         }
         
