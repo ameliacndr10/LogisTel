@@ -114,8 +114,7 @@ public class PengajuanPeminjamanServlet extends HttpServlet {
             psPeminjaman.setString(2, tglMulai);
             psPeminjaman.setString(3, tglSelesai);
             
-            String barcodeData = java.util.UUID.randomUUID().toString().substring(0, 8).toUpperCase();
-            psPeminjaman.setString(4, barcodeData);
+          psPeminjaman.setNull(4, java.sql.Types.VARCHAR);
             
             psPeminjaman.executeUpdate();
 
