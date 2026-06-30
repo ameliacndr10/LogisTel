@@ -452,7 +452,7 @@
                                                         <% } %>
                                                     </td>
                                                    <td class="px-6 py-4 text-center">
-    <% if ("APPROVED".equalsIgnoreCase(status)) { %>
+    <% if ("APPROVED".equalsIgnoreCase(status) && barcode != null && !barcode.trim().isEmpty()) { %>
 
         <button onclick="openBarcodeModal('<%= idTrans %>', '<%= namaItem %>', '<%= barcode %>')"
             class="text-xs font-bold text-telkom-700 hover:text-white bg-red-50 hover:bg-telkom-600 border border-red-200 hover:border-telkom-600 px-3 py-1.5 rounded-xl transition duration-150 shadow-sm">

@@ -96,12 +96,20 @@ public class VerifikasiServlet extends HttpServlet {
                     response.sendRedirect("dashboard-admin.jsp?status=gagal_bentrok");
                     return;
                 } else {
-                    // Jika aman, lakukan update status PEMINJAMAN menjadi APPROVED
-                    String updateSql = "UPDATE peminjaman SET status = 'APPROVED' WHERE id_peminjaman = ?";
-                    try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
-                        ps.setInt(1, idPeminjaman);
-                        ps.executeUpdate();
-                    }
+                   // Generate barcode saat admin APPROVE
+String barcode = java.util.UUID.randomUUID()
+        .toString()
+        .substring(0, 8)
+        .toUpperCase();
+
+// Update status menjadi APPROVED sekaligus simpan barcode
+String updateSql = "UPDATE peminjaman SET status = 'APPROVED', barcode = ? WHERE id_peminjaman = ?";
+
+try (PreparedStatement ps = conn.prepareStatement(updateSql)) {
+    ps.setString(1, barcode);
+    ps.setInt(2, idPeminjaman);
+    ps.executeUpdate();
+}
                     
                     // Kurangi jumlah stok logistik di gudang
                     String updateStok = "UPDATE barang b " +
